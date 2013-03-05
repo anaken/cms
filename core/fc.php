@@ -56,7 +56,13 @@ class FC {
 
   public function config($name = 'index') {
     if ( ! isset($this->config[$name])) {
-      $config = json_decode(file_get_contents(APP_PATH.'/config/'.$name.'.json'));
+      $configFile = APP_PATH.'/config/'.$name.'.json';
+      if ( ! file_exists($configFile) && file_exists($configFile . '.dist')) {
+        if ( ! @copy($configFile . '.dist', $configFile)) {
+          throw new xException("Невозможно скопировать исходный файл конфигурации {$configFile}.dist => {$configFile}", 1);
+        }
+      }
+      $config = json_decode(file_get_contents($configFile));
       if ( ! $config) {
         throw new xException("Ошибка конфигурации {$name}", 1);
       }
@@ -73,34 +79,34 @@ class FC {
     if ($e->getCode() == E_NOTICE || $e->getCode() == E_STRICT) {
       return;
     }
-    file_put_contents(APP_PATH.'/logs/exceptions.log', date('Y-m-d H:i:s').': '."[".$e->getCode()."] ".$e->getMessage()."\nFile: ".$e->getFile().':'.$e->getLine()."\nTrace: ".$e->getTraceAsString()."\n\n", FILE_APPEND);
+    $r = self::log('exceptions', "[".$e->getCode()."] ".(method_exists($e, 'getSystemMessage') ? $e->getSystemMessage() : '').".\nUser message: ".$e->getMessage()."\nFile: ".$e->getFile().':'.$e->getLine()."\nTrace: ".$e->getTraceAsString());
     //$this->sendErrorMail($error);
     if (ctrl()->request()->is_ajax) {
       ob_clean();
       ctrl()->_json(array('e' => ($e->getCode() ? $e->getCode() : 1), 'msg' => $e->getMessage()));
     }
-    //die($e->getMessage());
+    $r || die($e->getMessage());
   }
 
-  public function defaultErrorHandler($errno, $errstr = '', $errfile = '', $errline = '') {
+  public static function defaultErrorHandler($errno, $errstr = '', $errfile = '', $errline = '') {
     if ($errno == E_NOTICE || $errno == E_STRICT) {
       return;
     }
-    file_put_contents(APP_PATH.'/logs/errors.log', date('Y-m-d H:i:s').': '."[".$errno."] ".$errstr."\nFile: ".$errfile.':'.$errline."\n\n", FILE_APPEND);
+    $r = self::log('errors', "[".$errno."] ".$errstr."\nFile: ".$errfile.':'.$errline);
     //$this->sendErrorMail($error);
     if (ctrl()->request()->is_ajax) {
       ob_clean();
       ctrl()->_json(array('e' => 1, 'msg' => 'Системная ошибка'));
     }
-    //die($errstr);
+    $r || die($errstr);
   }
 
-  public function defaultShutdownHandler() {
+  public static function defaultShutdownHandler() {
     $error = error_get_last();
     if ( ! $error || $error['type'] == E_NOTICE || $error['type'] == E_STRICT) {
       return;
     }
-    file_put_contents(APP_PATH.'/logs/shutdowns.log', date('Y-m-d H:i:s').': '.print_r($error,1)."\n\n", FILE_APPEND);
+    self::log('shutdowns', print_r($error,1));
     //$this->sendErrorMail(print_r($error,1));
     if (ctrl()->request()->is_ajax) {
       //ob_clean();
@@ -108,8 +114,12 @@ class FC {
     }
   }
 
-  public function sendErrorMail($error) {
+  public static function sendErrorMail($error) {
     @mail(FC()->config()->adminEmail, 'Ошибка на сайте '.$_SERVER['HTTP_HOST'], $error);
+  }
+
+  public static function log($type, $message) {
+    return file_put_contents(APP_PATH."/logs/{$type}.log", date('Y-m-d H:i:s').": {$message}\n\n", FILE_APPEND);
   }
 
 }
@@ -133,8 +143,8 @@ class xException extends Exception {
 
 }
 
-set_exception_handler(array(FC(), 'defaultExceptionHandler'));
+set_exception_handler(array('FC', 'defaultExceptionHandler'));
 
-set_error_handler(array(FC(), 'defaultErrorHandler'));
+set_error_handler(array('FC', 'defaultErrorHandler'));
 
-register_shutdown_function(array(FC(), 'defaultShutdownHandler'));
+register_shutdown_function(array('FC', 'defaultShutdownHandler'));

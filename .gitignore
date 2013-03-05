@@ -1,4 +1,5 @@
 .idea/*
 core/logs/*
+core/config/*.json
 img/user/*
 ext/ckfinder/userfiles/*
