@@ -2,7 +2,8 @@
 
 class format {
 
-  const ERROR_FORMAT_NOT_FOUND = 211;
+  const ERROR_FORMAT_NOT_FOUND     = 211;
+  const ERROR_CANNON_APPLY_PREFORM = 212;
 
   protected static $instance;
 
@@ -172,10 +173,10 @@ class format {
 
   private function _preform_link($field, $data) {
     $target = @$data[$field->preform->target];
-    if ( ! is_null($target)) {
-      return funcs::url($data[$field->preform->target]);
+    if ( ! $target) {
+      throw new xException('Нельзя применить формат link', self::ERROR_CANNON_APPLY_PREFORM);
     }
-    return $target;
+    return funcs::url($data[$field->preform->target]);
   }
 
 }

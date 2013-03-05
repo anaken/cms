@@ -384,7 +384,17 @@ class model {
     $fields = $this->tableParams()->fields;
     foreach ($fields as $key => $field) {
       if (isset($field->preform)) {
-        $data[$key] = format::preform($field, $data);
+        try {
+          $data[$key] = format::preform($field, $data);
+        }
+        catch (Exception $e) {
+          if ($e->getCode() == format::ERROR_CANNON_APPLY_PREFORM) {
+            unset($data[$key]);
+          }
+          else {
+            throw $e;
+          }
+        }
       }
     }
     return $data;
@@ -404,8 +414,9 @@ class model {
 
   /**
    * Обернуть данные в объекты
-   * @param array $items
-   * @param array
+   * @param  array $items
+   * @param  array
+   * @return array
    */
   final public function wrap($items) {
     $objectClass = $this->objectClass;
