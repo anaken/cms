@@ -1,0 +1,453 @@
+{
+  "users":{
+    "caption" : "Пользователи",
+    "id"      : "id",
+    "fields"  : {
+      "id":{
+        "name"     : "id",
+        "caption"  : "ID",
+        "type"     : "int",
+        "hidden"   : 1
+      },
+      "name":{
+        "name"     : "name",
+        "caption"  : "Имя",
+        "type"     : "string"
+      },
+      "login":{
+        "name"     : "login",
+        "caption"  : "Логин",
+        "type"     : "string",
+        "required" : 1
+      },
+      "pass":{
+        "name"     : "pass",
+        "caption"  : "Пароль",
+        "type"     : "password"
+      },
+      "is_admin":{
+        "name"     : "is_admin",
+        "caption"  : "Администратор",
+        "type"     : "bool"
+      }
+    },
+    "data":{
+      "admin":{
+        "id"       : "1",
+        "name"     : "admin",
+        "login"    : "admin",
+        "pass"     : "350ad319223326dd84ee3610ddbdaef7",
+        "is_admin" : "1"
+      }
+    }
+  },
+  "rubrics":{
+    "caption" : "Категории",
+    "id"      : "id",
+    "order"   : "sort",
+    "link"    : "/catalog/[link]-[id]",
+    "fields"  : {
+      "id":{
+        "name"     : "id",
+        "caption"  : "ID",
+        "type"     : "int",
+        "hidden"   : 1
+      },
+      "name":{
+        "name"     : "name",
+        "caption"  : "Наименование",
+        "type"     : "string",
+        "required" : 1
+      },
+      "link":{
+        "name"     : "link",
+        "caption"  : "Ссылка",
+        "type"     : "string",
+        "hidden"   : 1,
+        "preform"  : {
+          "type"   : "link",
+          "target" : "name"
+        }
+      },
+      "parent_id":{
+        "name"     : "parent_id",
+        "caption"  : "Родитель",
+        "type"     : "int",
+        "format":{
+          "type"   : "list",
+          "table"  : "rubrics",
+          "id"     : "id",
+          "name"   : "name",
+          "except" : "id:id"
+        }
+      },
+      "description":{
+        "name"     : "description",
+        "caption"  : "Описание",
+        "type"     : "text",
+        "format":{
+          "type"   : "editor"
+        }
+      },
+      "sort":{
+        "name"     : "sort",
+        "caption"  : "Порядок",
+        "type"     : "int",
+        "hidden"   : 1
+      }
+    }
+  },
+  "manufacturers":{
+    "caption" : "Производители",
+    "id"      : "id",
+    "fields"  : {
+      "id":{
+        "name"     : "id",
+        "caption"  : "ID",
+        "type"     : "int",
+        "hidden"   : 1
+      },
+      "name":{
+        "name"     : "name",
+        "caption"  : "Наименование",
+        "type"     : "string",
+        "required" : 1
+      }
+    }
+  },
+  "goods":{
+    "caption" : "Товары",
+    "id"      : "id",
+    "link"    : "/good/[link]-[id]",
+    "fields"  : {
+      "id":{
+        "name"     : "id",
+        "caption"  : "ID",
+        "type"     : "int",
+        "hidden"   : 1
+      },
+      "rubric_id":{
+        "name"     : "rubric_id",
+        "caption"  : "Рубрика",
+        "type"     : "int",
+        "required" : 1,
+        "format":{
+          "type"     : "list",
+          "table"    : "rubrics",
+          "id"       : "id",
+          "name"     : "name",
+          "editable" : 1
+        }
+      },
+      "manufacturer_id":{
+        "name"     : "manufacturer_id",
+        "caption"  : "Фирма",
+        "type"     : "int",
+        "required" : 1,
+        "format":{
+          "type"     : "list",
+          "table"    : "manufacturers",
+          "id"       : "id",
+          "name"     : "name",
+          "editable" : 1
+        }
+      },
+      "name":{
+        "name"     : "name",
+        "caption"  : "Наименование",
+        "type"     : "string",
+        "required" : 1
+      },
+      "link":{
+        "name"     : "link",
+        "caption"  : "Ссылка",
+        "type"     : "string",
+        "hidden"   : 1,
+        "preform"  : {
+          "type"   : "link",
+          "target" : "name"
+        }
+      },
+      "price":{
+        "name"     : "price",
+        "caption"  : "Цена",
+        "type"     : "string",
+        "required" : 1
+      },
+      "hit":{
+        "name"     : "hit",
+        "caption"  : "Хит продаж",
+        "type"     : "bool",
+        "default"  : 0
+      },
+      "novelty":{
+        "name"     : "novelty",
+        "caption"  : "Новинка",
+        "type"     : "bool",
+        "default"  : 0
+      },
+      "not_available":{
+        "name"     : "not_available",
+        "caption"  : "Товара нет в наличии",
+        "type"     : "bool",
+        "default"  : 0
+      },
+      "image_id":{
+        "name"     : "image_id",
+        "caption"  : "Картинка",
+        "type"     : "int",
+        "format":{
+          "type"   : "image"
+        }
+      },
+      "description":{
+        "name"     : "description",
+        "caption"  : "Описание",
+        "type"     : "text",
+        "format":{
+          "type"   : "editor"
+        }
+      }
+    }
+  },
+  "images":{
+    "caption" : "Картинки",
+    "id"      : "id",
+    "fields"  : {
+      "id":{
+        "name"     : "id",
+        "caption"  : "ID",
+        "type"     : "int",
+        "hidden"   : 1
+      },
+      "name":{
+        "name"     : "name",
+        "caption"  : "Название",
+        "type"     : "string",
+        "required" : 1
+      },
+      "type":{
+        "name"     : "type",
+        "caption"  : "Тип",
+        "type"     : "string",
+        "required" : 1
+      },
+      "ext":{
+        "name"     : "ext",
+        "caption"  : "Расширение",
+        "type"     : "string"
+      }
+    }
+  },
+  "texts":{
+    "caption" : "Информация",
+    "id"      : "id",
+    "link"    : "/text/[id]",
+    "begins"  : 100,
+    "fields"  : {
+      "id":{
+        "name"     : "id",
+        "caption"  : "ID",
+        "type"     : "int",
+        "hidden"   : 1
+      },
+      "name":{
+        "name"     : "name",
+        "caption"  : "Заголовок",
+        "type"     : "string"
+      },
+      "link":{
+        "name"     : "link",
+        "caption"  : "Ссылка",
+        "type"     : "string"
+      },
+      "text":{
+        "name"     : "text",
+        "caption"  : "Текст",
+        "type"     : "text",
+        "format":{
+          "type"   : "editor"
+        }
+      }
+    }
+  },
+  "menu":{
+    "caption" : "Меню",
+    "id"      : "id",
+    "link"    : "[link]",
+    "order"   : "sort",
+    "fields"  : {
+      "id":{
+        "name"     : "id",
+        "caption"  : "ID",
+        "type"     : "int",
+        "hidden"   : 1
+      },
+      "name":{
+        "name"     : "name",
+        "caption"  : "Наименование",
+        "type"     : "string",
+        "required" : 1
+      },
+      "link":{
+        "name"     : "link",
+        "caption"  : "Ссылка",
+        "type"     : "string",
+        "required" : 1
+      },
+      "sort":{
+        "name"     : "sort",
+        "caption"  : "Порядок",
+        "type"     : "int",
+        "hidden"   : 1
+      }
+    }
+  },
+  "orders":{
+    "caption" : "Заказы",
+    "id"      : "id",
+    "fields"  : {
+      "id":{
+        "name"     : "id",
+        "caption"  : "ID",
+        "type"     : "int",
+        "hidden"   : 1
+      },
+      "created":{
+        "name"     : "created",
+        "caption"  : "Дата заказа",
+        "type"     : "datetime"
+      },
+      "user":{
+        "name"     : "user",
+        "caption"  : "Заказчик",
+        "type"     : "string"
+      },
+      "phone":{
+        "name"     : "phone",
+        "caption"  : "Телефон заказчика",
+        "type"     : "string"
+      },
+      "desc":{
+        "name"     : "desc",
+        "caption"  : "Описание заказа",
+        "type"     : "text"
+      }
+    }
+  },
+  "order_goods":{
+    "caption" : "Заказанные товары",
+    "id"      : "id",
+    "fields"  : {
+      "id":{
+        "name"     : "id",
+        "caption"  : "ID",
+        "type"     : "int",
+        "hidden"   : 1
+      },
+      "order_id":{
+        "name"     : "order_id",
+        "caption"  : "Заказ",
+        "type"     : "int",
+        "required" : 1,
+        "format":{
+          "type"   : "list",
+          "table"  : "orders",
+          "id"     : "id",
+          "name"   : "user"
+        }
+      },
+      "good_id":{
+        "name"     : "good_id",
+        "caption"  : "Товар",
+        "type"     : "int",
+        "required" : 1,
+        "format":{
+          "type"   : "list",
+          "table"  : "goods",
+          "id"     : "id",
+          "name"   : "name"
+        }
+      },
+      "cnt":{
+        "name"     : "cnt",
+        "caption"  : "Количество",
+        "type"     : "int"
+      }
+    }
+  },
+  "news":{
+    "caption" : "Новости",
+    "id"      : "id",
+    "link"    : "/news/[link]-[id]",
+    "fields"  : {
+      "id":{
+        "name"     : "id",
+        "caption"  : "ID",
+        "type"     : "int",
+        "hidden"   : 1
+      },
+      "link":{
+        "name"     : "link",
+        "caption"  : "Ссылка",
+        "type"     : "string",
+        "hidden"   : 1,
+        "preform"  : {
+          "type"   : "link",
+          "target" : "name"
+        }
+      },
+      "name":{
+        "name"     : "name",
+        "caption"  : "Заголовок",
+        "type"     : "string",
+        "required" : 1
+      },
+      "date":{
+        "name"     : "date",
+        "caption"  : "Дата",
+        "type"     : "date",
+        "required" : 1
+      },
+      "desc":{
+        "name"     : "desc",
+        "caption"  : "Анонс",
+        "type"     : "text"
+      },
+      "text":{
+        "name"     : "text",
+        "caption"  : "Текст",
+        "type"     : "text",
+        "required" : 1,
+        "format":{
+          "type"   : "editor"
+        }
+      }
+    }
+  },
+  "searches":{
+    "caption" : "Поисковые запросы",
+    "id"      : "id",
+    "fields"  : {
+      "id":{
+        "name"     : "id",
+        "caption"  : "ID",
+        "type"     : "int",
+        "hidden"   : 1
+      },
+      "name":{
+        "name"     : "name",
+        "caption"  : "Запрос",
+        "type"     : "string",
+        "required" : 1
+      },
+      "date":{
+        "name"     : "date",
+        "caption"  : "Дата",
+        "type"     : "datetime",
+        "default"  : "now()",
+        "hidden"   : 1
+      }
+    }
+  }
+}

@@ -1,0 +1,40 @@
+.crudFormTable th {
+  width: 200px;
+  text-align: right
+}
+.crudFormTable input, .crudFormTable select, .crudFormTable textarea {
+  width: 350px
+}
+.crudFormTable .crudCheckbox {
+  width: auto
+}
+.crudFormTable .formatInEditableList {
+  width: 300px
+}
+.crudBtns {
+  white-space: nowrap
+}
+.fileIframe {
+  position: absolute;
+  left: -2000px; top: 0;
+}
+.uploadImageBtn {
+  margin-bottom: 5px;
+}
+.crudReport {
+  width: 780px;
+  border-collapse: collapse
+}
+.crudReport, .crudReport th, .crudReport td {
+  border: 1px solid #000;
+}
+.crudReport caption {
+  font-weight: bold;
+  font-size: 1.1em
+}
+.crudReport td {
+  padding: 0 5px;
+}
+.crudReport .trEven {
+  background: #E6E6E6;
+}

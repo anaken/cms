@@ -1,0 +1,494 @@
+html {
+  height: 100%;
+}
+img {
+  border: 0
+}
+body {
+  background: url(/img/bg.jpg);
+  /* font-family: tahoma,arial,verdana,sans-serif,Lucida Sans; */
+  font-family: Georgia;
+  /* text-shadow: 1px 1px 1px #000; */
+  font-style: italic;
+  font-size: 0.7em;
+  font-weight: normal;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+textarea {
+  font-family: tahoma,arial,verdana,sans-serif,Lucida Sans;
+  font-size: 1.1em
+}
+h1 {
+  margin-top: 0;
+}
+.page {
+  position: relative;
+  width: 100%; height: 100%;
+}
+.layout {
+  margin: 0 auto;
+  padding: 0;
+  position: relative;
+  width: 800px;
+}
+.layout_table {
+  position: relative;
+  margin: 0 auto;
+  width: 840px; height: 100%;
+}
+.layout_table td {
+  vertical-align: top;
+}
+.laybgl, .laybgr {
+  width: 20px;
+}
+.laybgl {
+  background: url(../img/s1.png) right repeat-y;
+}
+.laybgr {
+	background: url(../img/s2.png) left repeat-y;
+}
+.header {
+  height: 130px;
+  background: #fff;
+  padding: 0 0 0 20px;
+}
+.menu-row {
+  background: #fff;
+  height: 43px;
+}
+.menu {
+  background: #fff;
+  padding: 0 0 0 50px;
+  text-shadow: 1px 1px 1px #fff;
+}
+.menu .menuItem {
+  min-height: 10px;
+  float: left;
+}
+.menu .button, .menu .gold {
+  margin-right: 20px;
+  font-size: 1.4em;
+  color: #000;
+  text-decoration: none;
+}
+.menuItem .button, .menuItem .buttonBgX, .menuItem .buttonBgMain {
+  border-radius: 20px;
+}
+.menuItem .buttonBgMain, .menu .gold .gold33 {
+  padding: 0 25px;
+  line-height: 2em;
+}
+.menu .cloud .cloudin2 {
+  white-space: nowrap;
+  text-align: center;
+  line-height: 3em;
+  padding: 0 20px;
+  min-width: 80px;
+}
+.menu .crudBtns {
+  float: left
+}
+.menu .crudBtns button {
+  font-size: 0.6em;
+}
+.menu .objectAddBtn {
+  float: left;
+}
+.footer {
+  clear: both;
+  background: #fff;
+  padding: 10px 0 10px 20px;
+}
+.footer .footer-body {
+  min-height: 30px;
+  position: relative;
+}
+.logo {
+  color: #000;
+}
+.logo img {
+  margin: 10px 0 -10px 0;
+}
+.logo .dsc {
+  position: absolute;
+  right: 40px; top: 110px
+}
+.header .phones {
+  text-align: right;
+  position: absolute;
+  right: 175px; top: 67px;
+  font-size: 1.2em;
+}
+.header .phones span {
+  font-weight: bold;
+}
+.header .phones button {
+  font-size: 0.5em
+}
+.header .phones p {
+  margin: 0
+}
+.layout .left-side, .layout .body, .layout .right-side {
+  float: left;
+}
+.left-side {
+  width: 180px;
+  background: #fff;
+  padding: 10px 10px 30px 10px;
+  overflow-x: hidden;
+}
+.body {
+  width: 580px;
+  padding: 10px 10px 30px 10px;
+  background: #fff;
+}
+.right-side {
+  width: 200px;
+  background: #fff;
+}
+.jstemp {
+  position: absolute;
+  left: -1000px; top: 0;
+}
+.block {
+  border-radius: 4px;
+  border: 1px solid #AD6345;
+  padding: 7px;
+  background: #fff;
+}
+.rubricsBlock a {
+  color: #000;
+  font-size: 1.1em;
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-decoration: none;
+}
+.rubricsBlock .active {
+  color: #AD6345;
+}
+.rubricsBlock .rubrics {
+  padding-bottom: 5px
+}
+.rubricsBlock .crudBtns button {
+  font-size: 0.6em;
+}
+.imageViewPlace img {
+  width: 200px;
+}
+.rubricGoodsList, .goodsBlock, .newGoods {
+  margin-right: -10px;
+}
+.goodsBlock .good {
+  width: 170px;
+  float: left;
+  margin: 0 10px 10px 0
+}
+.goodsBlock .good h4 {
+  text-align: center;
+  margin: 0 0 5px 0;
+  font-size: 1.2em;
+}
+.goodsBlock .good h4 a {
+  color: #000;
+}
+.goodsBlock .good .goodImage, .hit .goodImage {
+  width: 170px;
+  overflow-x: hidden;
+  text-align: center;
+}
+.goodsBlock .sgold .sgr, .sendOrderRow .sgold .sgr, .goodBlock .sgold .sgr, .buyGoods .sgr, .searchSubmit {
+  line-height: 2.2em
+}
+.goodsBlock .button, .goodsBlock .buttonBgMain, .goodsBlock .buttonBgX {
+  display: block;
+  text-align: center;
+}
+.goodsBlock .buttonBgMain {
+  margin: 0 auto;
+}
+.goodPrice {
+  display: block;
+  margin: 5px 0;
+  color: #f00;
+  font-size: 1.5em;
+  text-align: center;
+}
+.textBlock .block, .goodBlock .block {
+  margin-bottom: 10px;
+}
+.goodBlock .goodImage {
+  float: left;
+  padding: 0 10px 10px 0;
+}
+.goodBlock .buyGoodsBtn {
+  margin: 10px 0;
+  width: 180px;
+  display: inline-block;
+}
+.goodBlock .buyGoodsBtn .button, .goodBlock .buyGoodsBtn .button span {
+  display: block;
+}
+.breadCrumbs h1 {
+  display: inline;
+}
+.breadCrumbs a {
+  color: #000;
+}
+.breadCrumbs {
+  margin: 0 0 14px 0
+}
+.subrubrics {
+  padding: 0 0 0 20px;
+  margin: 5px 0;
+  color: #AD6345;
+}
+.subrubrics li {
+  margin-bottom: 3px;
+}
+.button {
+  background:url(/img/btn_bg_y.png) left repeat-y #FEA2AA;
+  cursor: pointer;
+  color: #000;
+  text-decoration: none;
+  border-radius: 5px;
+  display: block;
+}
+.buttonBgX {
+  background:url(/img/btn_bg_x.png) top repeat-x;
+  border-radius: 5px;
+  display: block;
+}
+.buttonBgMain {
+  background:url(/img/btn_bg.png) left top no-repeat;
+  padding: 5px;
+  border-radius: 5px;
+  border: 1px solid #AD6345;
+  display: block;
+  text-align: center
+}
+.cartPage {
+  margin-right: -10px
+}
+.cartBlock {
+  position: absolute;
+  width: 110px;
+  right: 40px; top: 40px
+}
+.cartBlock h5 {
+  margin: 0;
+  text-align: center;
+  font-size: 1.1em;
+}
+.cartBlock h5 a {
+  color: #000;
+}
+.cartBlock .count {
+  font-weight: bold;
+}
+.checkoutOrder, .sendOrder {
+  width: 200px;
+  margin: 0 auto;
+}
+.hide {
+  display: none !important
+}
+.clear {
+  clear: both
+}
+.orderForm th {
+  width: 200px;
+  text-align: right
+}
+.orderForm td input, .orderForm td textarea {
+  width: 250px;
+}
+.sendOrderRow td {
+  padding: 10px;
+}
+.errorMsg {
+  color: #f00;
+  text-align: center;
+}
+.noticeMsg {
+  color: #0DBF13;
+  text-align: center;
+}
+.rubricManufacturers {
+  margin: 10px
+}
+.rubricManufacturers .manufacturerItem {
+  float: left;
+  width: 150px;
+  margin-right: 10px
+}
+.loader {
+  background: url(/img/loading.gif) center center no-repeat;
+  height: 50px;
+}
+.cloud {
+  display: block;
+  cursor: pointer;
+  color: #000;
+  text-decoration: none;
+  background: url(/img/cloud3_center.png) 0 0;
+}
+.cloud .cloudin1 {
+  display: block;
+  background: url(/img/cloud3_right.png) right center no-repeat;
+}
+.cloud .cloudin2 {
+  display: block;
+  min-height: 50px;
+  min-width: 120px;
+  background: url(/img/cloud3_left.png) left center no-repeat;
+}
+.gold {
+  display: block;
+  background: url(/img/btn1_bg_12.png) #FFAC38 repeat-x
+}
+.gold .gold21 {
+  background: url(/img/btn1_bg_21.png) left repeat-y
+}
+.gold .gold23 {
+  background: url(/img/btn1_bg_23.png) right repeat-y
+}
+.gold .gold32 {
+  background: url(/img/btn1_bg_32.png) bottom repeat-x
+}
+.gold .gold11 {
+  background: url(/img/btn1_bg_11.png) left top no-repeat
+}
+.gold .gold13 {
+  background: url(/img/btn1_bg_13.png) right top no-repeat
+}
+.gold .gold31 {
+  background: url(/img/btn1_bg_31.png) left bottom no-repeat
+}
+.gold .gold33 {
+  text-align: center;
+  min-height: 38px;
+  min-width: 50px;
+  background: url(/img/btn1_bg_33.png) right bottom no-repeat
+}
+.gold, .gold .gold21, .gold .gold23, .gold .gold32, .gold .gold11, .gold .gold13, .gold .gold31, .gold .gold33 {
+  border-radius: 15px;
+}
+.sgold {
+  background: url(/img/gold-button-md2_left.png) left bottom no-repeat;
+  display: block;
+  cursor: pointer;
+  text-decoration: none;
+  color: #000
+}
+.sgold .sgl {
+  background: url(/img/gold-button-md2_right.png) right bottom no-repeat
+}
+.sgold .sgr {
+  text-align: center;
+  min-height: 30px;
+  min-width: 50px;
+  margin: 0 31px;
+  background: url(/img/gold-button-md2_center.png) bottom repeat-x;
+  text-shadow: 1px 1px 1px #fff;
+}
+.sgold .sgm {
+  margin: 0 -31px
+}
+.footer .counters {
+  position: absolute;
+  right: 15px; top: 0;
+}
+.newsBlock, .newGoods {
+  padding-top: 15px;
+}
+.newsBlock h3, .newGoods h3 {
+  font-size: 1.4em
+}
+.newsBlock .newsItem {
+  margin-bottom: 15px
+}
+.newsBlock .newsItem h4 {
+  margin-top: 0;
+  font-size: 1.1em
+}
+.newsBlock .newsItem h4 a, .newsBlock h3 a {
+  color: #000
+}
+.newsBlock .newsItem h4 .date {
+  float: left;
+  margin-right: 10px;
+  color: #949494;
+  font-size: 0.9em
+}
+.newsShow .date {
+  color: #949494;
+  margin: -10px 0 10px 0;
+}
+.hit h3 {
+  margin: 0 0 5px 0;
+  font-size: 1.4em;
+  text-align: center
+}
+.hit h4 {
+  font-size: 1.2em;
+  margin: 5px 0;
+  text-align: center
+}
+.hit h4 a {
+  color: #000
+}
+.searchIndex .searchSubmit {
+  width: 150px;
+  margin: -2px 0 0 15px;
+  float: left
+}
+.searchIndex .searchForm input {
+  float: left;
+  margin-bottom: 15px
+}
+.searchIndex .searchText {
+  width: 300px; height: 20px
+}
+.searchItems a {
+  color: #000
+}
+.searchItem {
+  margin-bottom: 5px;
+  font-size: 1.3em
+}
+.searchItem td {
+  padding-right: 10px
+}
+.searchIcon {
+  text-align: right;
+}
+.searchRubrics { color: blue }
+.searchGoods   { color: orange }
+.searchTexts   { color: green }
+.searchMenu    { color: cyan }
+.searchNews    { color: red }
+
+.searchBlock .searchText {
+  width: 96%;
+  display: block;
+  margin: 0 auto;
+}
+.goodNotAvailable {
+  float: left;
+  width: 170px;
+  padding-top: 30px;
+  text-align: center;
+  color: #f00;
+  font-size: 1.3em;
+  font-weight: bold;
+  display: block;
+  position: relative;
+  margin-right: -170px;
+}
+.logoutButton {
+  position: absolute;
+  right: 30px; top: 5px;
+}
