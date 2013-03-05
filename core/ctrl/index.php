@@ -29,7 +29,7 @@ class indexCtrl extends ctrl {
     else if ($objectCall == 'text' && FC()->user->is_admin) {
       return $this->view->render('index/text', array(
         'link' => $link,
-        'text' => $text
+        'text' => $object
       ));
     }
     else {

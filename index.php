@@ -19,4 +19,3 @@ if (get_magic_quotes_gpc()) {
 
 require_once(dirname(__FILE__).'/core/fc.php');
 echo FC()->handle();
-?>

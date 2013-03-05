@@ -14,7 +14,7 @@ class simpleDb
     const ERROR_TABLE_NOT_EXIST = 101146;
 
     /**
-     * ïğèìåğ èñïîëüçîâàíèÿ:
+     * Ğ¿Ñ€Ğ¸Ğ¼ĞµÑ€ Ğ¸ÑĞ¿Ğ¾Ğ»ÑŒĞ·Ğ¾Ğ²Ğ°Ğ½Ğ¸Ñ:
      * $db = new simpleDb($connect);
      */
     function __construct($connect)
@@ -54,20 +54,19 @@ class simpleDb
             $errorCode = mysql_errno($this->c);
             file_put_contents(APP_PATH.'/logs/db.log', date('Y-m-d H:i:s: ')."[{$errorCode}] ".mysql_error($this->c)."\n", FILE_APPEND);
             throw new xException("Db error", $errorCode + 100000);
-            return false;
         }
         return new simpleDbResult(array('resource' => $r, 'connect' => $this->c));
     }
 
     /**
-     * ïğèìåğ èñïîëüçîâàíèÿ:
+     * Ğ¿Ñ€Ğ¸Ğ¼ĞµÑ€ Ğ¸ÑĞ¿Ğ¾Ğ»ÑŒĞ·Ğ¾Ğ²Ğ°Ğ½Ğ¸Ñ:
      * $r = $db->select('*', 'tbl_name', array(
      *     'where' => array(
      *         'id' => 1,
      *     )
      * ));
      * while ($row = $r->next()) {
-     *     // .. şçàåì $row
+     *     // .. ÑĞ·Ğ°ĞµĞ¼ $row
      * }
      */
     function select($select, $table, $params = array())
@@ -81,7 +80,7 @@ class simpleDb
     }
 
     /**
-     * ïğèìåğ èñïîëüçîâàíèÿ:
+     * Ğ¿Ñ€Ğ¸Ğ¼ĞµÑ€ Ğ¸ÑĞ¿Ğ¾Ğ»ÑŒĞ·Ğ¾Ğ²Ğ°Ğ½Ğ¸Ñ:
      * $r = $db->insert('tbl_name', array(
      *     'param1' => 'param1',
      * ));
@@ -101,7 +100,7 @@ class simpleDb
     }
 
     /**
-     * ïğèìåğ èñïîëüçîâàíèÿ:
+     * Ğ¿Ñ€Ğ¸Ğ¼ĞµÑ€ Ğ¸ÑĞ¿Ğ¾Ğ»ÑŒĞ·Ğ¾Ğ²Ğ°Ğ½Ğ¸Ñ:
      * $r = $db->update('tbl_name',
      *     array(
      *         'param1' => 'param1',
@@ -125,7 +124,7 @@ class simpleDb
     }
     
     /**
-     * ïğèìåğ èñïîëüçîâàíèÿ:
+     * Ğ¿Ñ€Ğ¸Ğ¼ĞµÑ€ Ğ¸ÑĞ¿Ğ¾Ğ»ÑŒĞ·Ğ¾Ğ²Ğ°Ğ½Ğ¸Ñ:
      * $r = $db->delete('tbl_name',
      *     array(
      *         'id' => 1,
@@ -239,7 +238,7 @@ class simpleDb
     }
 
     /**
-     * ïğèìåğû èñïîëüçîâàíèÿ:
+     * Ğ¿Ñ€Ğ¸Ğ¼ĞµÑ€Ñ‹ Ğ¸ÑĞ¿Ğ¾Ğ»ÑŒĞ·Ğ¾Ğ²Ğ°Ğ½Ğ¸Ñ:
      * $r = $db->createTable('tbl_name',
      *     array(
      *         'fields' => array(

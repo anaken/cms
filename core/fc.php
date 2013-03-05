@@ -76,8 +76,8 @@ class FC {
     file_put_contents(APP_PATH.'/logs/exceptions.log', date('Y-m-d H:i:s').': '."[".$e->getCode()."] ".$e->getMessage()."\nFile: ".$e->getFile().':'.$e->getLine()."\nTrace: ".$e->getTraceAsString()."\n\n", FILE_APPEND);
     //$this->sendErrorMail($error);
     if (ctrl()->request()->is_ajax) {
-      //ob_clean();
-      //ctrl()->_json(array('e' => ($e->getCode() ? $e->getCode() : 1), 'msg' => $e->getMessage()));
+      ob_clean();
+      ctrl()->_json(array('e' => ($e->getCode() ? $e->getCode() : 1), 'msg' => $e->getMessage()));
     }
     //die($e->getMessage());
   }
@@ -89,8 +89,8 @@ class FC {
     file_put_contents(APP_PATH.'/logs/errors.log', date('Y-m-d H:i:s').': '."[".$errno."] ".$errstr."\nFile: ".$errfile.':'.$errline."\n\n", FILE_APPEND);
     //$this->sendErrorMail($error);
     if (ctrl()->request()->is_ajax) {
-      //ob_clean();
-      //ctrl()->_json(array('e' => ($errno ? $errno : 1), 'msg' => $errstr));
+      ob_clean();
+      ctrl()->_json(array('e' => 1, 'msg' => 'Системная ошибка'));
     }
     //die($errstr);
   }
