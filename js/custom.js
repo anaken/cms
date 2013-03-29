@@ -105,24 +105,6 @@ function handleHTML(selector) {
   $('.layout.left-side').css('min-height', height + bottom);
   */
 
-  // заплатка чтоб облака выводились нормально
-  /*
-  if (handleHTML.initialized == false) {
-    var cloudInnerPadding = 40;
-    var cloudRepeatBgWidth = 24;
-    var cloudSidesWidth = 94;
-    var cloudMinWidth = 120;
-    $('.cloud').each(function(){
-      var width = $(this).width();
-      if (width > cloudMinWidth) {
-        var w = width - cloudSidesWidth;
-        w = cloudRepeatBgWidth - w % cloudRepeatBgWidth;
-        $(this).find('.cloudin2').width(width - cloudInnerPadding + w);
-      }
-    });
-  }
-  */
-
   handleHTML.initialized = true;
 }
 handleHTML.initialized = false;

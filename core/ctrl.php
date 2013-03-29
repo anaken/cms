@@ -151,7 +151,7 @@ class ctrl {
         $action = self::FLOAT_METHOD;
       }
       else {
-        throw new xException("Action {$action} not defined in controller {$ctrl}", self::ERROR_ACTION_NOT_FOUND);
+        throw new xException("Action {$action} not defined in controller ".get_class($object), self::ERROR_ACTION_NOT_FOUND);
       }
     }
     return new ctrlResult(array(
@@ -191,7 +191,7 @@ class ctrlResult {
   }
 
   function __toString() {
-    return $this->params['result'];
+    return (string)$this->params['result'];
   }
 
   function __get($name) {

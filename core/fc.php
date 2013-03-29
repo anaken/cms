@@ -75,7 +75,7 @@ class FC {
     return ctrl()->handle();
   }
 
-  public function defaultExceptionHandler($e) {
+  public function defaultExceptionHandler(Exception $e) {
     if ($e->getCode() == E_NOTICE || $e->getCode() == E_STRICT) {
       return;
     }

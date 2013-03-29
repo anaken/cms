@@ -63,7 +63,7 @@ class model {
   /**
    * Получение экземпляра библиотеки для конкретной таблицы
    * @param  string $name
-   * @return scheme_template
+   * @return self
    */
   public function __get($name) {
     if (isset(self::$instances[$name])) {
@@ -152,7 +152,7 @@ class model {
 
   /**
    * Установить флаг вызова родительского метода без проверки в дочернем
-   * @return scheme_template
+   * @return self
    */
   final public function force() {
     $this->_force = true;
@@ -200,8 +200,6 @@ class model {
       }
     }
     
-    $objectClass = $this->objectClass;
-
     if (is_numeric($filter) || is_string($filter)) {
       $item = $result->next();
       if ( ! $item) {
@@ -267,7 +265,6 @@ class model {
       return $this->$action($data);
     }
     $data = $this->_preformData($data);
-    $table = $this->table();
     $id = FC()->db->insert($this->table(), $data);
     $this->log($data);
     return $id;
@@ -404,6 +401,7 @@ class model {
    * Записать объект в кеш
    * @param $id
    * @param $object
+   * @return object
    */
   final protected function _cache($id, $object = false) {
     if ($object === false) {

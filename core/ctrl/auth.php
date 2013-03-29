@@ -44,5 +44,3 @@ class authCtrl extends ctrl {
   }
 
 }
-
-?>

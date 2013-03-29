@@ -8,7 +8,6 @@ class xImages extends model {
     $image = model()->images->get($id);
     $file = APP_PATH.'/../img/user/'.$id.($image->ext ? '.'.$image->ext : '');
     $fileThumb = APP_PATH.'/../img/user/thumb/'.$id.($image->ext ? '.'.$image->ext : '');
-    $fileThumb = APP_PATH.'/../img/user/thumb/'.$id.($image->ext ? '.'.$image->ext : '');
     $fileThumbBig = APP_PATH.'/../img/user/thumb/big/'.$id.($image->ext ? '.'.$image->ext : '');
     @unlink($file);
     @unlink($fileThumb);

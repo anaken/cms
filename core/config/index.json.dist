@@ -1,12 +1,11 @@
 {
   "db":{
-    "host":"localhost",
-    "user":"root",
-    "pass":"111",
-    "db":"test"
+    "host" : "localhost",
+    "user" : "root",
+    "pass" : "111",
+    "db"   : "test"
   },
-  "debug":"1",
-  "orderEmail":"tonysheva-anna@mail.ru",
-  "logoIdent":"http://cooltext.com/Logo-Design?LogoID=797515956",
-  "adminEmail":"ahakeh@gmail.com"
+  "debug"      : "1",
+  "orderEmail" : "test@mail.ru",
+  "adminEmail" : "test@mail.ru"
 }

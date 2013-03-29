@@ -57,5 +57,3 @@ class searchCtrl extends ctrl {
   }
 
 }
-
-?>

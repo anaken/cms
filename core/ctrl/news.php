@@ -36,5 +36,3 @@ class newsCtrl extends ctrl {
   }
 
 }
-
-?>

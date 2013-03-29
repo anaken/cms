@@ -74,7 +74,6 @@ class crudCtrl extends ctrl {
   function del() {
     $table = $this->post('object');
     $id = (int)$this->post('id');
-    $objectTable = FC()->config('tables')->$table;
     model()->$table->del($id);
     $this->_json(array('e' => 0));
   }
@@ -162,5 +161,3 @@ class crudCtrl extends ctrl {
   }
 
 }
-
-?>
