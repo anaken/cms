@@ -24,4 +24,18 @@ class modelRubricsObject extends modelObject {
     return model()->manufacturers->wrap(FC()->db->query($sql)->all());
   }
 
+  private static $fullLink;
+
+  function link() {
+    if ( ! self::$fullLink[$this->id]) {
+      $rubrics = array();
+      $parent = $this;
+      while ($parent->parent_id && ($parent = model()->rubrics->get($parent->parent_id))) {
+        array_unshift($rubrics, $parent->link . '/');
+      }
+      self::$fullLink[$this->id] = '/'.implode('/', $rubrics).$this->link;
+    }
+    return self::$fullLink[$this->id];
+  }
+
 }

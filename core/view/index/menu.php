@@ -13,7 +13,7 @@
 <? } ?>
 
 <? if (FC()->user->is_admin) { ?>
-  <button class="objectAddBtn" onclick="crud.form('menu')">Добавить пункт меню</button>
+  <?=format::btn('add', 'menu', null, array('caption' => 'Добавить пункт меню'))?>
 <? } ?>
 
 </div>

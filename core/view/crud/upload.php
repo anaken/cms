@@ -5,14 +5,16 @@
 
   <? if ($uploaded) { ?>
   <script>
-  window.parent.crud.uploaded(<?=$number?>, <?=$id?>, '<?=$uploaded['file']?>');
+  window.parent.crud.uploaded('<?=$id?>',
+    [<? foreach ($uploaded as $i => $file) { ?><?=$i ? ',' : ''?>{id:'<?=$file['id']?>', file:'<?=$file['file']?>'}<? } ?>]
+  );
   </script>
   <? } ?>
 
   <form action="/crud/upload/" method="post" enctype="multipart/form-data" id="form">
-    <input onchange="this.form.submit()" id="file" type="file" name="file"/>
+    <input onchange="this.form.submit()" id="file" type="file" name="file[]" <?=$is_multiple ? 'multiple' : ''?>/>
     <input type="hidden" name="id" value="<?=$id?>"/>
-    <input type="hidden" name="number" value="<?=$number?>"/>
+    <input type="hidden" name="is_multiple" value="<?=$is_multiple?>"/>
   </form>
 
   </body>

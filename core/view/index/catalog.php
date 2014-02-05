@@ -36,5 +36,5 @@ $(function(){
 </div>
 
 <? if (FC()->user->is_admin) { ?>
-<button onclick="crud.form('goods', '', {defaults: {rubric_id: <?=$rubric->id?>}})">Добавить товар</button>
+<?=format::btn('add', 'goods', null, array('caption' => 'Добавить товар', 'defaults' => array('rubric_id' => $rubric->id)))?>
 <? } ?>

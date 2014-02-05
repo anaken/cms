@@ -22,6 +22,6 @@ $mainTag = $main ? 'h1' : 'h3';
   <? } ?>
 
   <? if (FC()->user->is_admin) { ?>
-  <button onclick="crud.form('news')">Добавить новость</button>
+    <?=format::btn('add', 'news', null, array('caption' => 'Добавить новость'))?>
   <? } ?>
 </div>

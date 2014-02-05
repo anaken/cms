@@ -52,7 +52,7 @@ class simpleDb
     $this->queries[] = $this->sql;
     if (!$r) {
       $errorCode = mysql_errno($this->c);
-      file_put_contents(APP_PATH . '/logs/db.log', date('Y-m-d H:i:s: ') . "[{$errorCode}] " . mysql_error($this->c) . "\n", FILE_APPEND);
+      file_put_contents(APP_PATH . '/logs/db.log', date('Y-m-d H:i:s: ') . "[{$errorCode}] " . mysql_error($this->c) . "\n{$this->sql}\n\n", FILE_APPEND);
       throw new xException("Db error", $errorCode + 100000);
     }
     return new simpleDbResult(array('resource' => $r, 'connect' => $this->c));

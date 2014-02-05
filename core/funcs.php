@@ -185,6 +185,24 @@ class funcs
     return str_replace("\n", ' ', print_r($var, 1));
   }
 
+  public static function removeDir($dir)
+  {
+    if ( ! is_readable($dir)) {
+      return;
+    }
+    $list = @scandir($dir);
+    unset($list[0], $list[1]);
+
+    foreach ($list as $file) {
+      if (is_dir($dir . $file)) {
+        self::removeDir($dir . $file . '/');
+        rmdir($dir . $file);
+      } else {
+        unlink($dir . $file);
+      }
+    }
+  }
+
 }
 
 /**

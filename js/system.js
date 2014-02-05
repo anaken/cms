@@ -1,39 +1,51 @@
 $(function(){
-  $('body').append('<div class="jstemp"></div>');
+  (function($){
+    $.fn.crudDialog = function(params) {
+      params = $.extend({
+        show: {
+          effect: "fade", // fade | puff | scale
+          duration: 400
+        },
+        hide: {
+          effect: "fade",
+          duration: 400
+        },
+        resizable: true
+      }, params);
+      return $(this.get()).dialog(params);
+    };
+  })(jQuery);
 
   handleSystemHTML();
 });
 
 function handleSystemHTML(selector) {
-  $selector = $(selector ? selector : 'body');
-  $selector.find('.objectAddBtn').button({
-    icons: {
-      primary: "ui-icon-plus"
-    },
-    text: false
-  });
-  $selector.find('.objectEditBtn').button({
-    icons: {
-      primary: "ui-icon-pencil"
-    },
-    text: false
-  });
-  $selector.find('.objectDelBtn').button({
-    icons: {
-      primary: "ui-icon-close"
-    },
-    text: false
-  });
+  var $selector = $(selector ? selector : 'body');
 
   $('.crudListSortable').sortable({
     stop: function( event, ui ) { crud.resort(this); }
   });
 
   $selector.find('.datepicker').datepicker({ dateFormat: 'yy-mm-dd' });
+
+  $selector.find(".crudMenu ul").menu();
+  $selector.find(".showCrudMenu").click(function(){
+    if ($('.crudMenu:visible').length) {
+      $('.crudMenu').hide();
+    }
+    else {
+      $('.crudMenu').show();
+    }
+  });
+  $selector.find(".crudMenu ul li").click(function(){
+    $('.crudMenu').hide();
+  });
 }
 
 var crud = {
-  form: function(object, id, params){
+  form: function(self, params){
+    var object = self && $(self).attr('data-table') ? $(self).attr('data-table') : params.table;
+    var id     = self && $(self).attr('data-id')    ? $(self).attr('data-id')    : (typeof params == 'undefined' ? null : params.id);
     var dialogName = object;
     $('.crudForm'+dialogName).dialog("destroy");
     $('.crudForm'+dialogName).remove();
@@ -46,40 +58,46 @@ var crud = {
     }
     $.post('/crud/form/', post, function(data){
       $('.jstemp').append(data);
-      $('.crudForm'+dialogName).dialog({
+      $('.crudForm'+dialogName).crudDialog({
         width  : 600,
         height : 'auto',
         modal  : false,
         buttons: {
           'Сохранить': function(){
-            $('.crudForm'+dialogName+' .ckeditor').each(function(){
-              editorId = $(this).attr('name');
-              $(this).val(CKEDITOR.instances[editorId].getData());
-            });
-            $.json('/crud/save/', $('.crudForm'+dialogName).inputs(), function(data){
-              var relocate = true;
-              if (params && params.callback) {
-                relocate = params.callback();
-              }
-              if (params && params.appendToList && data.id) {
-                relocate = false;
-                $(params.appendToList).append('<option value="' + data.id + '">' + data.name + '</option>');
-              }
-              if (relocate !== false) {
-                document.location = document.location.toString();
-              }
-              $('.crudForm'+dialogName).dialog('close');
-            });
+            crud.save($('.crudForm'+dialogName).get(0), params);
           }
         }
       });
       $('.crudForm'+dialogName).dialog('open');
       crud.handleForm(dialogName);
     });
+    return false;
   },
-  
-  del: function(object, id, params){
-    if ( ! confirm('Удалить?')) {
+
+  save: function(self, params) {
+    $(self).find('.ckeditor').each(function(){
+      $(this).val(CKEDITOR.instances[$(this).attr('name')].getData());
+    });
+    $.json('/crud/save/', $(self).inputs(), function(data){
+      var relocate = true;
+      if (params && params.callback) {
+        relocate = params.callback();
+      }
+      if (params && params.appendToList && data.id) {
+        relocate = false;
+        $(params.appendToList).append('<option value="' + data.id + '">' + data.name + '</option>');
+      }
+      if (relocate !== false) {
+        document.location = document.location.toString();
+      }
+      $(self).dialog('close');
+    });
+  },
+
+  del: function(self, params){
+    var object = self && $(self).attr('data-table') ? $(self).attr('data-table') : params.table;
+    var id     = self && $(self).attr('data-id')    ? $(self).attr('data-id') : params.id;
+    if ( ( typeof params == "undefined" || ! params.force) && ! confirm('Удалить?')) {
       return;
     }
     $.json('/crud/del/', {
@@ -95,19 +113,49 @@ var crud = {
         document.location = document.location.toString();
       }
     });
+    return false;
   },
 
-  upload: function(number, image_id){
-    $('#file', $('#uploadFile'+number).contents()).click();
+  childs: function(self, params){
+    var $menu = $(self).closest('.crudChildsPlace').find('.crudChilds');
+    if ($menu.length) {
+      $menu.toggle();
+      return;
+    }
+    var object = self && $(self).attr('data-table') ? $(self).attr('data-table') : params.table;
+    var id     = self && $(self).attr('data-id')    ? $(self).attr('data-id') : params.id;
+    $.json('/crud/childs/', {
+      id     : id,
+      object : object
+    }, function(result){
+      var childs = result.childs;
+      var childsHTML = [];
+      for (var i in childs) {
+        childsHTML.push('<li><a onclick="crud.report(\''+childs[i].name+'\', {params: {\''+i+'\': \''+id+'\'}, edit: 1, order: \'id desc\', limit: 50});$(this).closest(\'.crudChilds\').hide();return false" href="#">'+childs[i].caption+'</a></li>');
+      }
+      var menu = '<ul class="crudChilds">'+childsHTML.join('')+'</ul>';
+      $(self).closest('.crudChildsPlace').append(menu);
+      $(self).closest('.crudChildsPlace').find('.crudChilds').menu();
+    });
+    return false;
   },
 
-  uploaded: function(number, image_id, file){
-    $('.imageHiddenField'+number).val(image_id);
-    $('.imageView'+number).html('<img src="'+file+'"/>');
+  upload: function(ident){
+    $('#file', $('#crudImageView'+ident+' iframe').contents()).click();
+  },
+
+  uploaded: function(ident, files){
+    var inputs = '';
+    var inputName = $('#crudImageView'+ident).attr('data-name');
+    for (var i in files) {
+      inputs += '<div class="crudImagesInput"><button button-type="2" icon="close" class="formatImageRemove objectDelBtn" onclick="crud.removeImage(this)">удалить</button><input onclick="crud.removeImage(this)" type="hidden" name="'+inputName+'" value="'+files[i].id+'"/><img src="'+files[i].file+'"/></div>';
+    }
+    $('#crudImageView'+ident+' .crudImagesInputs').append(inputs);
+    handleHTML('#crudImageView'+ident+' .crudImagesInputs');
   },
 
   handleForm: function(name){
-    $('button').button();
+    handleHTML('.crudForm'+name);
     handleSystemHTML('.crudForm'+name);
     $('.crudForm'+name+' .crudFormTable .formatInList').change(function(){
       var $tableInput = $(this).closest('.crudFormTable').find('input[name="_table_"]');
@@ -132,7 +180,7 @@ var crud = {
 
   resort: function(list){
     var items = [];
-    $list = $(list);
+    var $list = $(list);
     $list.find('> *').each(function(){
       items.push($(this).attr('crud-id'));
     });
@@ -149,13 +197,19 @@ var crud = {
     params = $.extend(params, {table: object});
     $.post('/crud/report/', params, function(data){
       $('.jstemp').append(data);
-      $('.crudReport'+dialogName).dialog({
-        width  : 800,
+      $('.crudReport'+dialogName).crudDialog({
+        width  : 920,
         height : 'auto',
         modal  : false
       });
       $('.crudReport'+dialogName).dialog('open');
+      handleSystemHTML('.crudReport'+dialogName);
+      handleHTML('.crudReport'+dialogName);
       callback && callback();
     });
+  },
+
+  removeImage: function(btn) {
+    $(btn).closest('.crudImagesInput').remove();
   }
 }

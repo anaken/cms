@@ -23,7 +23,10 @@
       "pass":{
         "name"     : "pass",
         "caption"  : "Пароль",
-        "type"     : "password"
+        "type"     : "password",
+        "preform"  : {
+          "type"   : "md5"
+        }
       },
       "is_admin":{
         "name"     : "is_admin",
@@ -213,6 +216,7 @@
   "images":{
     "caption" : "Картинки",
     "id"      : "id",
+    "system"  : 1,
     "fields"  : {
       "id":{
         "name"     : "id",
@@ -236,6 +240,11 @@
         "name"     : "ext",
         "caption"  : "Расширение",
         "type"     : "string"
+      },
+      "size":{
+        "name"     : "size",
+        "caption"  : "Размер",
+        "type"     : "int"
       }
     }
   },

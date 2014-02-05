@@ -41,18 +41,41 @@ class crudCtrl extends ctrl {
     $table = $this->post('_table_');
     $id = (int)$this->post('_id_');
     $objectTable = FC()->config('tables')->$table;
-    $data = array();
+    $object = $id ? model()->$table->get($id) : null;
+    $data = $scope = array();
     foreach ($objectTable->fields as $fieldName => $field) {
       $postFieldName = 'in_'.$fieldName;
-      if ( ! isset($this->request()->post[$postFieldName]) || @$field->hidden) continue;
+      if (
+        ! isset($this->request()->post[$postFieldName]) ||
+        @$field->hidden ||
+        @$field->type == 'password' && ! $this->post($postFieldName)) {
+        continue;
+      }
+
+      if ( is_array($this->post($postFieldName)) && $field->type == 'scope') {
+        $scope[$fieldName] = $this->post($postFieldName);
+        continue;
+      }
+
       $data[$fieldName] = format::input($field, $this->post($postFieldName));
+
       if ( ! trim($data[$fieldName]) && @$field->required) {
-        throw new xException('Поле '.$field->caption.' должно быть заполнено', self::ERROR_USER_ERROR, 'Поле '.$field->caption.' должно быть заполнено');
+        throw new Exception('Поле '.$field->caption.' должно быть заполнено', self::ERROR_USER_ERROR);
+      }
+
+      if ($field->type == 'int' &&
+        @$field->format->type == 'image' &&
+          $object &&
+          $object->$fieldName &&
+          $object->$fieldName != $data[$fieldName]
+      ) {
+        model()->images->del($object->$fieldName);
       }
     }
     if ( ! $data) {
-      throw new xException('Ошибка сохранения', self::ERROR_PARAMS);
+      throw new Exception('Ошибка сохранения');
     }
+    FC()->db->begin();
     if ($id && model()->$table->get($id)) {
       model()->$table->save($id, $data);
     }
@@ -60,8 +83,13 @@ class crudCtrl extends ctrl {
       if ($id) {
         $data[$objectTable->id] = $id;
       }
-      $id = model()->$table->save($data);
+      $newId = model()->$table->save($data);
+      $id = $id ? $id : $newId;
     }
+
+    $this->_saveScope($id, $objectTable, $scope);
+
+    FC()->db->commit();
     $object = model()->$table->get($id);
     $this->_json(array(
       'e'      => 0,
@@ -71,6 +99,30 @@ class crudCtrl extends ctrl {
     ));
   }
 
+  protected function _saveScope($id, $objectTable, $scope) {
+    foreach ($scope as $fieldName => $values) {
+      $fieldFormat = $objectTable->fields->$fieldName->format;
+      if ($fieldFormat->type == 'image') {
+        $existImages = model()->{$fieldFormat->table}->get(array( $fieldFormat->id => $id ));
+        $existImagesIds = array_key_values($existImages, $fieldFormat->image);
+        $delImagesIds = array_diff($existImagesIds, $values);
+        $newImagesIds = array_diff($values, $existImagesIds);
+
+        if ($delImagesIds) {
+          model()->{$fieldFormat->table}->delList(array( $fieldFormat->image => $delImagesIds ));
+          model()->images->delList(array( 'id' => $delImagesIds ));
+        }
+
+        foreach ($newImagesIds as $value) {
+          model()->{$fieldFormat->table}->save(array(
+            $fieldFormat->id    => $id,
+            $fieldFormat->image => $value,
+          ));
+        }
+      }
+    }
+  }
+
   function del() {
     $table = $this->post('object');
     $id = (int)$this->post('id');
@@ -78,47 +130,67 @@ class crudCtrl extends ctrl {
     $this->_json(array('e' => 0));
   }
 
+  function childs() {
+    $table = $this->post('object');
+    $childs = modelObjectTable::getTableChilds($table);
+    $this->_json(array(
+      'e'      => 0,
+      'name'   => $table,
+      'childs' => $childs,
+    ));
+  }
+
   function upload() {
     if ($_FILES) {
-      $number = (int)$this->post('number');
-      $id = (int)$this->post('id');
-      $ext = pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);
-      $data = array(
-        'name' => $_FILES['file']['name'],
-        'type' => $_FILES['file']['type'],
-        'ext'  => $ext
-      );
-      FC()->db->begin();
-      if ($id) {
-        model()->images->save($id, $data);
+      $id = $this->post('id');
+      $is_multiple = $this->post('is_multiple');
+      $uploaded = array();
+
+      foreach ($_FILES['file']['name'] as $i => $v) {
+        $file = array();
+        foreach (array('name', 'type', 'tmp_name', 'error', 'size') as $p) {
+          $file[$p] = $_FILES['file'][$p][$i];
+        }
+        $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+        $data = array(
+          'name' => $file['name'],
+          'type' => $file['type'],
+          'ext'  => $ext,
+          'size' => $file['size']
+        );
+
+        FC()->db->begin();
+
+        $image_id = model()->images->save($data);
+
+        $dir = APP_PATH.'/../img/user/'.$image_id;
+        if ( ! file_exists($dir)) {
+          mkdir($dir, 0755, true);
+        }
+        $imgFile = APP_PATH.'/../img/user/'.$image_id.'/src.'.$ext;
+        $result = move_uploaded_file($file['tmp_name'], $imgFile);
+
+        if ($result) {
+          FC()->db->commit();
+        }
+        else {
+          FC()->db->rollback();
+        }
+
+        $uploaded[] = array_merge($data, array(
+          'id'   => $image_id,
+          'file' => '/img/user/'.$image_id.'/src.'.$ext
+        ));
       }
-      else {
-        $id = model()->images->save($data);
-      }
-      $imgFile = APP_PATH.'/../img/user/'.$id.'.'.$ext;
-      $thumbFile = APP_PATH.'/../img/user/thumb/'.$id.'.'.$ext;
-      $thumbBigFile = APP_PATH.'/../img/user/thumb/big/'.$id.'.'.$ext;
-      $result = move_uploaded_file($_FILES['file']['tmp_name'], $imgFile);
-      funcs::imageThumb($imgFile, $thumbFile, 170, 100, IMAGETYPE_JPEG);
-      funcs::imageThumb($imgFile, $thumbBigFile, 350, 350, IMAGETYPE_JPEG);
-      if ($result) {
-        FC()->db->commit();
-      }
-      else {
-        FC()->db->rollback();
-      }
-      $uploaded = array_merge($data, array(
-        'file' => '/img/user/'.$id.'.'.$ext
-      ));
     }
     else {
-      $number = (int)array_shift($this->request()->params);
-      $id = (int)array_shift($this->request()->params);
+      $id = $this->request()->get['id'];
+      $is_multiple = $this->request()->get['is_multiple'];
     }
     return $this->view->render('crud/upload', array(
-      'id'       => $id,
-      'number'   => $number,
-      'uploaded' => @$uploaded
+      'id'          => $id,
+      'is_multiple' => $is_multiple,
+      'uploaded'    => @$uploaded
     ));
   }
 
@@ -137,7 +209,7 @@ class crudCtrl extends ctrl {
     $this->_json(array('e' => 0));
   }
 
-  function install($table = null) {
+  function install() {
     $tables = FC()->config('tables');
     foreach ((array)$tables as $tableName => $table) {
       model()->install($tableName);
@@ -152,11 +224,20 @@ class crudCtrl extends ctrl {
     $order = $this->post('order');
     $limit = $this->post('limit');
     $table = FC()->config('tables')->$tableName;
+    $order = $order ? $order : $table->id;
     $objects = model()->$tableName->get($params, $order, $limit);
     return $this->view->render('crud/report', array(
       'table'     => $table,
       'tableName' => $tableName,
       'objects'   => $objects,
+      'editable'  => $this->post('edit'),
+      'defaults'  => $params
+    ));
+  }
+
+  function menu() {
+    return $this->view->render('crud/menu', array(
+      'tables' => FC()->config('tables')
     ));
   }
 

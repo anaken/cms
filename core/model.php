@@ -430,7 +430,7 @@ class model {
     if ( ! file_exists($dir)) {
       mkdir($dir, 0700);
     }
-    file_put_contents($dir.'/'.date('Y-m').'.log', date('d H:i:s: [').$_SERVER['REMOTE_ADDR']."]: [".(is_array($id) ? 'add' : 'edit:'.$id)."] ".funcs::varToLog($data)."\n", FILE_APPEND);
+    file_put_contents($dir.'/'.date('Y-m').'.log', date('d H:i:s: [').$_SERVER['REMOTE_ADDR']."]: [".(is_array($id) ? 'add' : 'edit:'.$id)."] ".funcs::varToLog($data ? $data : $id)."\n", FILE_APPEND);
   }
 
   final public function install($tableName) {
@@ -449,22 +449,31 @@ class model {
       throw new xException('Error creating table, descrition not defined for table '.$tableName, self::ERROR_TABLE_NOT_DEFINED);
     }
     $table = $tables->$tableName;
-    $fields = array();
+    $fields = $indexes = array();
     foreach ($table->fields as $fieldName => $fieldConfig) {
       $sqlType = @$typeMatch[$fieldConfig->type];
+      if (in_array($fieldConfig->type, array('scope'))) {
+        continue;
+      }
       if ( ! $sqlType) {
         throw new xException('Type '.$fieldConfig->type.' not found in sql-types', self::ERROR_SQL_TYPE_NOT_FOUND);
+      }
+      if ( $fieldName != $table->id && in_array($fieldConfig->type, array('int', 'bool')) ) {
+        $indexes[] = ", KEY `{$fieldName}_idx` (`{$fieldName}`)";
       }
       $required = @$fieldConfig->required || isset($fieldConfig->default) ? 'NOT NULL' : '';
       $increment = $fieldName == $table->id ? 'auto_increment primary key' : '';
       $default = isset($fieldConfig->default) ? 'DEFAULT '.$fieldConfig->default : '';
-      $fields[] = "`{$fieldName}` {$sqlType} {$required} {$increment} {$default}";
+      $comment = str_replace("'", "''", $fieldConfig->caption);
+      $fields[] = "`{$fieldName}` {$sqlType} {$required} {$increment} {$default} COMMENT '{$comment}'";
     }
     $begins = @$table->begins ? 'AUTO_INCREMENT='.$table->begins : '';
+    $tableComment = str_replace("'", "''", $table->caption);
     $sql = "
       CREATE TABLE IF NOT EXISTS `{$tableName}` (
         ".implode(',', $fields)."
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8 {$begins};
+        ".implode(' ', $indexes)."
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='{$tableComment}' {$begins};
     ";
     FC()->db->query($sql);
     if (@$table->data) {
@@ -482,16 +491,40 @@ function model($name = null) {
 
 class modelObject {
 
-  var $table;
+  var $tableName;
   var $params;
+  protected static $tables;
 
   function __construct($table, $params) {
-    $this->table = $table;
     $this->params = (object)$params;
+    $this->tableName = $table->name;
+    self::$tables[$table->name] = new modelObjectTable($table, $this);
   }
 
   function __get($name) {
     return @$this->params->$name;
+  }
+
+  public function __call($name, $args) {
+    $table = $this->table();
+    if (array_key_exists($name, (array)$table->fields)) {
+      if (@$table->fields->$name->format->type == 'image' && $this->params->$name) {
+        return model()->images->get($this->params->$name);
+      }
+      if (@$table->fields->$name->format->type == 'list') {
+        return model()->{$table->fields->$name->format->table}->get($this->$name);
+      }
+      if (@$table->fields->$name->type == 'scope' && $table->fields->$name->format->type == 'image') {
+        $images = array_key_values(model()->{$table->fields->$name->format->table}->get(array(
+          $table->fields->$name->format->id => $this->id
+        )), $table->fields->$name->format->image);
+        return model()->images->get(array('id' => $images));
+      }
+    }
+    else if (strpos($name, 'Btn') == strlen($name) - 3 || strpos($name, 'Button') == strlen($name) - 6) {
+      $type = strpos($name, 'Btn') == strlen($name) - 3 ? 2 : 1;
+      return format::btn(substr($name, 0, strpos($name, 'B')), $this->tableName, $this->id, array_merge(array('type' => $type), (array)$args[0]));
+    }
   }
 
   function data() {
@@ -499,15 +532,41 @@ class modelObject {
   }
 
   function table() {
-    return $this->table;
+    return self::$tables[$this->tableName];
   }
 
-  function editBtn() {
-    return format::editBtn($this);
+}
+
+class modelObjectTable {
+
+  protected $params;
+  protected $object;
+  protected static $childs;
+
+  function __construct($table, modelObject $object) {
+    $this->params = (object)$table;
+    $this->object = $object;
   }
 
-  function delBtn() {
-    return format::delBtn($this);
+  function __get($name) {
+    return @$this->params->$name;
   }
 
+  function childs() {
+    return self::getTableChilds($this->name);
+  }
+
+  static function getTableChilds($name) {
+    if ( ! self::$childs[$name]) {
+      foreach ( FC()->config('tables') as $tableName => $table) {
+        foreach ( $table->fields as $fieldName => $field ) {
+          if ( @$field->format->type == 'list' && $field->format->table == $name ) {
+            $table->name = $tableName;
+            self::$childs[$name][$fieldName] = $table;
+          }
+        }
+      }
+    }
+    return self::$childs[$name];
+  }
 }

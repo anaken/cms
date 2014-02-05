@@ -5,26 +5,30 @@ class xImages extends model {
   protected $objectClass = 'modelImagesObject';
 
   function delImages($id, $params = array()) {
-    $image = model()->images->get($id);
-    $file = APP_PATH.'/../img/user/'.$id.($image->ext ? '.'.$image->ext : '');
-    $fileThumb = APP_PATH.'/../img/user/thumb/'.$id.($image->ext ? '.'.$image->ext : '');
-    $fileThumbBig = APP_PATH.'/../img/user/thumb/big/'.$id.($image->ext ? '.'.$image->ext : '');
-    @unlink($file);
-    @unlink($fileThumb);
-    @unlink($fileThumbBig);
+    $dir = APP_PATH.'/../img/user/'.$id.'/';
+    funcs::removeDir($dir);
     return model()->images->force()->del($id, $params);
   }
   
 }
 
 class modelImagesObject extends modelObject {
-  
-  function thumb($type = '') {
-    return '/img/user/thumb/'.($type ? $type.'/' : '').$this->id.($this->ext ? '.'.$this->ext : '');
+
+  function thumb($width, $height, $type = IMAGETYPE_JPEG) {
+    $name = $width . 'x' . $height . 'x' . $type;
+    $dir = '/img/user/'.$this->id.'/thumb/';
+    if ( ! file_exists(APP_PATH.'/..'.$dir)) {
+      mkdir(APP_PATH.'/..'.$dir, 0755, true);
+    }
+    $file = $dir.$name.($this->ext ? '.'.$this->ext : '');
+    if ( ! file_exists(APP_PATH.'/..'.$file)) {
+      funcs::imageThumb(APP_PATH.'/..'.$this->src(), APP_PATH.'/..'.$file, $width, $height, $type, false);
+    }
+    return $file;
   }
 
   function src() {
-    return '/img/user/'.$this->id.($this->ext ? '.'.$this->ext : '');
+    return '/img/user/'.$this->id.'/src'.($this->ext ? '.'.$this->ext : '');
   }
 
 }

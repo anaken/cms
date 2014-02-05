@@ -3,11 +3,16 @@
 class format {
 
   const ERROR_FORMAT_NOT_FOUND     = 211;
-  const ERROR_CANNON_APPLY_PREFORM = 212;
+  const ERROR_CANNON_APPLY_PREFORM = 3311;
 
   protected static $instance;
 
-  protected static $imgNumber = 0;
+  protected static $btnTypes = array(
+    'add'    => array('icon' => 'plus',        'act' => 'form',   'caption' => 'Добавить'),
+    'edit'   => array('icon' => 'pencil',      'act' => 'form',   'caption' => 'Редактировать'),
+    'del'    => array('icon' => 'close',       'act' => 'del',    'caption' => 'Удалить'),
+    'childs' => array('icon' => 'folder-open', 'act' => 'childs', 'caption' => 'Открыть'),
+  );
 
   private function __construct() {}
 
@@ -21,7 +26,7 @@ class format {
   public static function button($inside, $params) {
     $tag = @$params['tag'] ? $params['tag'] : 'div';
     $href = @$params['href'] ? ' href="'.$params['href'].'"' : '';
-    return '<'.$tag.' class="gold"'.$href.'><div class="gold21"><div class="gold23"><div class="gold32"><div class="gold11"><div class="gold13"><div class="gold31"><div class="gold33">'.$inside.'</div></div></div></div></div></div></div></'.$tag.'>';
+    return '<'.$tag.' class="button"'.$href.'>'.$inside.'</'.$tag.'>';
   }
 
   public static function smallButton($inside, $params) {
@@ -32,16 +37,19 @@ class format {
     return '<'.$tag.' class="sgold'.$class.'"'.$href.$click.'><div class="sgl"><div class="sgr"><div class="sgm">'.$inside.'</div></div></div></'.$tag.'>';
   }
 
-  public static function editBtn(modelObject $object) {
-    $table = $object->table();
-    return '<button class="objectEditBtn" onclick="crud.form(\''.$table->name.'\', '.$object->{$table->id}.')">Редактировать</button>';
+  public static function btn($type, $tableName, $id = null, $params = array()) {
+    $button = self::$btnTypes[$type];
+    $caption = @$params['caption'] ? $params['caption'] : $button['caption'];
+    $crudParams = (object)array_intersect_key($params, array_flip(array(
+      'defaults', 'appendToList'
+    )));
+    $buttonType = $params['type'] ? $params['type'] : 1;
+    return '<button class="'.$button['act'].'ObjectBtn crudObjectBtn" button-type="'.$buttonType.'" data-table="'.$tableName.'" data-id="'.$id.'" icon="'.$button['icon'].'" onclick="return crud.'.$button['act'].'(this, '.htmlspecialchars(json_encode($crudParams)).')">'.$caption.'</button>';
   }
 
-  public static function delBtn(modelObject $object) {
-    $table = $object->table();
-    return '<button class="objectDelBtn" onclick="crud.del(\''.$table->name.'\', '.$object->{$table->id}.')">Удалить</button>';
-  }
-  
+  /**
+   * @todo часть функционала из _in_string должна перекочевать сюда (всякие проверки на default, editable и прочее..)
+   */
   public static function in($field, modelObject $object = null, $params = array()) {
     $format = (@$field->format ? $field->format->type : $field->type);
     $method = '_in_'.$format;
@@ -54,7 +62,7 @@ class format {
   public static function out($field, $object, $params = array()) {
     $fieldConfig = $object->table()->fields->$field;
     $format = (@$fieldConfig->format ? $fieldConfig->format->type : $fieldConfig->type);
-    if ( ! in_array($format, array('image', 'list'))) {
+    if ( ! in_array($format, array('image', 'list', 'password'))) {
       return $object->$field;
     }
     $method = '_out_'.$format;
@@ -78,7 +86,11 @@ class format {
 
   function _in_bool($field, $object = null, $params = array()) {
     $value = ($object ? $object->{$field->name} : @$params['value']);
-    return '<input class="crudCheckbox" type="checkbox" name="in_'.$field->name.'"'.($value ? ' checked' : '').' value="1"/>';
+    return '<input class="crudCheckbox" type="checkbox" name="in_'.$field->name.'"'.($value || $field->default ? ' checked' : '').' value="1"/>';
+  }
+
+  function _in_password($field, $object = null, $params = array()) {
+    return '<input type="password" name="in_'.$field->name.'"/>';
   }
 
   function _in_string($field, $object = null, $params = array()) {
@@ -89,7 +101,9 @@ class format {
         $attr[$a] = ' ' . $a . '="' . str_replace('"', '\\"', $v) . '"';
       }
     }
-    return '<input type="text" name="in_'.$field->name.'" value="'.$value.'"'.implode('', (array)$attr).'/>';
+    $value = $object || $value ? $value : $field->default;
+    $editable = isset($field->editable) && ! $field->editable ? 'disabled' : '';
+    return '<input '.$editable.' type="text" name="in_'.$field->name.'" value="'.$value.'"'.implode('', (array)$attr).'/>';
   }
 
   function _in_text($field, $object = null, $params = array()) {
@@ -103,14 +117,25 @@ class format {
   }
 
   function _in_image($field, $object = null, $params = array()) {
-    self::$imgNumber++;
+    $inputIdent = md5(time()*rand());
     $img = '';
-    if ($object && $object->{$field->name}) {
-      $imageId = (int)$object->{$field->name};
-      $image = model()->images->get($imageId);
-      $img = '<img src="/img/user/'.$imageId.($image->ext ? '.'.$image->ext : '').'"/>';
+    $is_multiple = $field->type == 'scope' ? 1 : 0;
+    $inputName = 'in_'.$field->name.($is_multiple ? '[]' : '');
+    if ($object) {
+      if ($field->format->table) {
+        $images = model()->{$field->format->table}->get(array($field->format->id => $object->{$object->table()->id}));
+        if ($images) {
+          $images = model()->images->get(array('id' => array_key_values($images, $field->format->image)));
+        }
+      }
+      else if ($object->{$field->name}()) {
+        $images = array($object->{$field->name}());
+      }
+      foreach ($images as $image) {
+        $img .= '<div class="crudImagesInput"><button button-type="2" icon="close" class="formatImageRemove objectDelBtn" onclick="crud.removeImage(this)">удалить</button><input onclick="crud.removeImage(this)" type="hidden" name="'.$inputName.'" value="'.$image->id.'"/><img src="'.$image->src().'"/></div>';
+      }
     }
-    return '<input class="imageHiddenField'.self::$imgNumber.'" type="hidden" name="in_'.$field->name.'" value="'.$imageId.'"/><div class="formatImage"><div class="imageViewPlace imageView'.self::$imgNumber.'">'.$img.'</div><div class="fileIframe"><iframe id="uploadFile'.self::$imgNumber.'" name="uploadFile'.self::$imgNumber.'" src="/crud/upload/'.self::$imgNumber.'/'.$imageId.'"></iframe></div><button class="uploadImageBtn" onclick="crud.upload('.self::$imgNumber.(@$imageId ? ','.$imageId : '').')">Выбрать</button></div>';
+    return '<div class="imageViewPlace" id="crudImageView'.$inputIdent.'" data-name="'.$inputName.'" data-multiple="'.$is_multiple.'"><div class="crudImagesInputs">'.$img.'</div><iframe class="fileIframe" src="/crud/upload/?id='.$inputIdent.'&is_multiple='.$is_multiple.'"></iframe><button class="uploadImageBtn" onclick="crud.upload(\''.$inputIdent.'\')">Выбрать</button></div>';
   }
 
   function _in_list($field, $object = null, $params = array()) {
@@ -131,8 +156,8 @@ class format {
     }
     $result .= '</select>';
     if (@$field->format->editable) {
-      $result .= '<button class="objectAddBtn" onclick="crud.form(\''.$table.'\', null, {appendToList: \'.inlist'.$field->name.'\'})">Добавить</button>';
-      $result .= '<button class="objectDelBtn" onclick="crud.del(\''.$table.'\', $(\'.inlist'.$field->name.'\').val(), {removeFrom: \'.inlist'.$field->name.'\'})">Удалить</button>';
+      $result .= '<button class="crudObjectBtn" button-type="2" icon="plus" onclick="crud.form(this, {table: \''.$table.'\', appendToList: \'.inlist'.$field->name.'\'})">Добавить</button>';
+      $result .= '<button class="crudObjectBtn" button-type="2" icon="close" onclick="crud.del(this, {table: \''.$table.'\', id: $(\'.inlist'.$field->name.'\').val(), removeFrom: \'.inlist'.$field->name.'\'})">Удалить</button>';
     }
     return $result;
   }
@@ -143,13 +168,21 @@ class format {
       return '';
     }
     $image = model()->images->get($imageId);
-    return '<img src="/img/user/'.$imageId.($image->ext ? '.'.$image->ext : '').'">';
+    $src = $params['width'] && $params['height'] ? $image->thumb($params['width'], $params['height']) : $image->src();
+    return '<img src="'.$src.'">';
   }
 
   function _out_list($field, $object, $params) {
-    $fieldConfig = $object->table->fields->$field;
+    $fieldConfig = $object->table()->fields->$field;
     $id = (int)$object->$field;
+    if ( ! $id) {
+      return '';
+    }
     return model()->{$fieldConfig->format->table}->get($id)->{$fieldConfig->format->name};
+  }
+
+  function _out_password($field, $object, $params) {
+    return '***';
   }
 
   public static function input($field, $data) {
@@ -172,11 +205,24 @@ class format {
   }
 
   private function _preform_link($field, $data) {
-    $target = @$data[$field->preform->target];
-    if ( ! $target) {
-      throw new xException('Нельзя применить формат link', self::ERROR_CANNON_APPLY_PREFORM);
+    if (isset($field->preform->target)) {
+      $target = @$data[$field->preform->target];
+      if ( ! $target) {
+        throw new Exception('Нельзя применить формат link', self::ERROR_CANNON_APPLY_PREFORM);
+      }
+      $url = $data[$field->preform->target];
     }
-    return funcs::url($data[$field->preform->target]);
+    else {
+      $url = strpos($data[$field->name], 'http') === 0 ?
+        $data[$field->name] :
+        ltrim($data[$field->name], '/');
+    }
+    return funcs::url($url);
+  }
+
+  private function _preform_md5($field, $data) {
+    ctrl::i('auth');
+    return md5($data[$field->name].authCtrl::SALT);
   }
 
 }

@@ -15,6 +15,12 @@ class view {
 
   protected static $title = 'Sweet Dream - Интернет-магазин текстиля для дома г. Курган';
 
+  protected static $header = '';
+
+  protected static $lastSubTitle = '';
+
+  protected static $noHeader = false;
+
   protected static $libs = array(
     'fancybox' => array(
       'css' => array('jquery.fancybox'),
@@ -42,11 +48,19 @@ class view {
     return file_exists($file) ? $file : false;
   }
 
-  public static function subTitle($name) {
+  public static function setNoHeader() {
+    self::$noHeader = true;
+  }
+
+  public static function subTitle($name = '') {
     if ( ! trim($name)) {
-      return;
+      if ( self::$noHeader ) {
+        return '';
+      }
+      return self::$lastSubTitle;
     }
-    self::$title = $name . ' - ' . self::$title;
+    self::$lastSubTitle = $name;
+    return self::$title = $name . ' - ' . self::$title;
   }
 
   public static function title($name = null) {
@@ -54,6 +68,13 @@ class view {
       self::$title = $name;
     }
     return self::$title;
+  }
+
+  public static function header($name = null) {
+    if ($name) {
+      self::$header = $name;
+    }
+    return (self::$header ? self::$header : self::subTitle());
   }
 
   public static function addJs($name) {

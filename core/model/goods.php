@@ -15,12 +15,14 @@ class xGoods extends model {
 }
 
 class modelGoodsObject extends modelObject {
-  
-  function image() {
-    if ( ! $this->image_id) {
-      return null;
+
+  private $fullLink;
+
+  function link() {
+    if ( ! ($rubric = $this->rubric_id())) {
+      return $this->link;
     }
-    return model()->images->get($this->image_id);
+    return $rubric->link() . '/' . $this->link . '-' . $this->id;
   }
 
 }

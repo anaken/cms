@@ -12,7 +12,7 @@ class ctrl {
   const ERROR_ACTION_NOT_FOUND     = 101;
   const ERROR_PARAMS               = 201;
 
-  const ERROR_USER_ERROR           = 11;
+  const ERROR_USER_ERROR = 5001;
 
   const FLOAT_METHOD = 'defaults';
 
@@ -29,6 +29,10 @@ class ctrl {
   private static $_instances = array();
 
   protected static $layout = 'layout';
+
+  protected $requestPage;
+
+  public static $breadCrumbs = array();
 
   private function __construct() {
     $this->view = new view();
@@ -75,7 +79,9 @@ class ctrl {
       if (in_array($e->getCode(), array(self::ERROR_CONTROLLER_NOT_FOUND, self::ERROR_ACTION_NOT_FOUND))) {
         $this->error404();
       }
-      throw $e;
+      elseif (FC()->config()->debug) {
+        FC()->defaultExceptionHandler($e);
+      }
     }
   }
 
@@ -174,6 +180,25 @@ class ctrl {
 
   public function _json($data) {
     die(json_encode($data));
+  }
+
+  public function test() {
+    return $this->_pages(3, 11);
+  }
+
+  protected function _pages($pages, $params = array()) {
+    $page = @$params['page'];
+    $requestPage = (int)$_GET['p'] > 0 ? (int)$_GET['p'] : (int)$_POST['page'];
+    $this->requestPage = is_null($page) ? ($requestPage > 0 ? $requestPage : 1) : $page;
+    return $this->view->render('pages', array(
+      'page'   => $this->requestPage,
+      'pages'  => $pages,
+      'href'   => @$params['href']
+    ));
+  }
+
+  public static function addCrumb($name, $link = null) {
+    self::$breadCrumbs[] = (object)array('name' => $name, 'link' => $link);
   }
 
 }

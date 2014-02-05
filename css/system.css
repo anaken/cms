@@ -1,3 +1,9 @@
+.hide {
+  display: none;
+}
+.crudFormTable {
+  width: 100%;
+}
 .crudFormTable th {
   width: 200px;
   text-align: right
@@ -11,8 +17,11 @@
 .crudFormTable .formatInEditableList {
   width: 300px
 }
+.crudFieldContainer textarea {
+  height: 100px;
+}
 .crudBtns {
-  white-space: nowrap
+  white-space: nowrap;
 }
 .fileIframe {
   position: absolute;
@@ -22,8 +31,8 @@
   margin-bottom: 5px;
 }
 .crudReport {
-  width: 780px;
-  border-collapse: collapse
+  width: 100%;
+  border-collapse: collapse;
 }
 .crudReport, .crudReport th, .crudReport td {
   border: 1px solid #000;
@@ -37,4 +46,52 @@
 }
 .crudReport .trEven {
   background: #E6E6E6;
+}
+.crudModules, .logoutButton {
+  display: inline;
+  position: relative;
+}
+.crudMenu {
+  display: none;
+  z-index: 1;
+  margin-top: 25px;
+  width: 200px;
+  position: absolute;
+  left: 0; top: 0;
+}
+.formatImageRemove {
+  float: left;
+  height: 2.4em;
+  margin: 0 -2.4em -16px 0;
+}
+.menu .crudBtns .objectEditBtn {
+  position: relative;
+}
+.menu .crudBtns,
+.contactsPhone .crudObjectBtn,
+.footerContacts .crudObjectBtn,
+.bannerButtons .crudObjectBtn {
+  position: absolute;
+  right: 0; bottom: 0;
+}
+.submenu .crudBtns {
+  position: static;
+}
+.imageViewPlace img {
+  max-width: 354px;
+}
+.crudChildsPlace {
+  position: relative;
+  display: inline;
+}
+.crudChilds {
+  position: absolute;
+  left: 0; top: 100%;
+  margin-top: 10px;
+  z-index: 1;
+}
+.mwcmsService {
+  position: fixed;
+  left: 0; top: 0;
+  z-index: 1;
 }

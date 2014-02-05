@@ -29,6 +29,6 @@
 <? } ?>
 
 <? if (FC()->user->is_admin) { ?>
-<button onclick="crud.form('rubrics')">Добавить группу товара</button>
+  <?=format::btn('add', 'rubrics', null, array('caption' => 'Добавить группу товара'))?>
 <? } ?>
 </div>

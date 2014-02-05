@@ -1,11 +1,51 @@
-var LOADER = '<div class="loader"></div>';
+var LOADER = '<div class="loading"></div>';
 
 $(document).ready(function(){
+  $('body').append('<div class="jstemp"></div>');
+
+  (function($){
+    $.expr[':'].renders = function(a, k, m, r) {
+      var i = $(a).pos();
+      var w = {
+        left   : window.scrollX,
+        top    : window.scrollY,
+        right  : window.innerWidth + window.scrollX,
+        bottom : window.innerHeight + window.scrollY
+      };
+      return ! ( i.bottom < w.top || i.top > w.bottom || i.right < w.left || i.left > w.right );
+    };
+
+    $.originalPostFunc = $.post;
+    $.post = function(a1, a2, a3, a4) {
+      var af, f;
+      $('body').append(LOADER);
+      if (typeof a3 == 'function') {
+        af = a3;
+      }
+      else if (typeof a2 == 'function') {
+        af = a2;
+        a4 = a3;
+      }
+      f = function(data, textStatus, jqXHR){
+        $('.loading').remove();
+        return af(data, textStatus, jqXHR);
+      };
+      return $.originalPostFunc(a1, a2, f, a4);
+    };
+
+    $.fn.originalButtonFunc = $.fn.button;
+    $.fn.button = function(params) {
+      var result = $(this.get()).originalButtonFunc(params);
+      $(this.get()).filter('.hide').hide();
+      return result;
+    };
+  })(jQuery);
+
   $.extend({
     json: function(url, params, callback) {
       $.post(url, params, function(result){
         try {
-          json = $.parseJSON(result);
+          var json = $.parseJSON(result);
           if (json.e != 0) {
             alert(json.msg);
             return;
@@ -30,13 +70,12 @@ $(document).ready(function(){
       });
       return inputs;
     },
-    
+
     pull: function(url, post, callback) {
       var self = this.get(0);
-      $(self).html(LOADER);
-      $(self).load(url, post, function(){
+      $.post(url, post, function(html){
+        $(self).html(html);
         handleHTML(self);
-        handleSystemHTML && handleSystemHTML(self);
         callback && callback();
       });
     },
@@ -71,11 +110,14 @@ $(document).ready(function(){
 });
 
 function handleHTML(selector) {
-  $selector = $(selector ? selector : 'body');
-  $selector.find('.window').dialog({
-    height: 'auto',
-    modal: true
-  });
+  var $selector = $(selector ? selector : 'body');
+
+  setTimeout(function(){ // <-- fuckin jqueryui
+    $selector.find('.window').dialog({
+      height: 'auto',
+      modal: false
+    });
+  }, 1);
 
   $.fancybox && $selector.find('a[rel="fancybox"]').fancybox({
 		'titleShow'     : false,
@@ -85,29 +127,38 @@ function handleHTML(selector) {
 		'easingOut'     : 'easeInBack'
 	});
 
-  $selector.find('button').button();
+  $selector.find('button').each(function(){
+    var params = {};
+    if ($(this).attr('icon')) {
+      params.icons = { primary: "ui-icon-" + $(this).attr('icon') };
+    }
+    params.text = $(this).attr('button-type') != 2;
+    $(this).button(params);
+  });
 
-  $selector.find('.button').wrapInner('<span class="buttonBgMain"></span>').wrapInner('<span class="buttonBgX"></span>');
-
-  /*
-  var leftHeight = $('.layout.left-side').height();
-  var bodyHeight = $('.layout.body').height();
-  var pos = $('.layout.footer').pos();
-  var bpos = $('body').pos();
-  var bottom = bpos.bottom > pos.bottom ? bpos.bottom - pos.bottom : 0;
-  if (leftHeight > bodyHeight) {
-    var height = leftHeight;
-  }
-  else {
-    var height = bodyHeight;
-  }
-  $('.layout.body').css('min-height', height + bottom);
-  $('.layout.left-side').css('min-height', height + bottom);
-  */
+  $selector.find('.radio').not('.mwcmsh').addClass('mwcmsh').click(function(){
+    mwcms.radio(this);
+  });
+  $selector.find('.checkbox').not('.mwcmsh').addClass('mwcmsh').click(function(){
+    mwcms.checkbox(this);
+  });
 
   handleHTML.initialized = true;
 }
 handleHTML.initialized = false;
+
+var mwcms = { /* middle way content management system */
+  radio: function(self){
+    var name = $(self).find('input').attr('name');
+    $('.radio input[name="'+name+'"]').closest('.radio').find('span').removeClass('radioActive');
+    $(self).find('span').addClass('radioActive');
+  },
+
+  checkbox: function(self){
+    var func = $(self).find('input:checked').length ? 'addClass' : 'removeClass';
+    $(self).find('span')[func]('checkboxActive');
+  }
+}
 
 var cart = {
   add: function(goodId, cnt){
@@ -127,7 +178,7 @@ var cart = {
     cart.reload(reloadParams);
   },
   reload: function(params){
-    $('.cartBlock').load('/cartBlock/');
+    $('.cartBlock').pull('/cartBlock/');
     params && params.callback && params.callback();
   }
 }
