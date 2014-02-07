@@ -8,7 +8,7 @@ class newsCtrl extends ctrl {
 
   function defaults() {
     $newId = (int)$this->request()->item_id;
-    $new = model()->news->get($newId);
+    $new = model('news')->get($newId);
     if ( ! $new) {
       throw new xException('Action {$newName} not found in '.get_class($this), self::ERROR_ACTION_NOT_FOUND);
     }
@@ -23,12 +23,12 @@ class newsCtrl extends ctrl {
     }
     return $this->view->render('news/block', array(
       'main' => $isMainPage,
-      'news' => model()->news->get(array('date <=' => date('Y-m-d')), 'date desc', $count)
+      'news' => model('news')->get(array('date <=' => date('Y-m-d')), 'date desc', $count)
     ));
   }
 
   function show($id) {
-    $new = model()->news->get($id);
+    $new = model('news')->get($id);
     view::subTitle($new->name);
     return $this->view->render('news/show', array(
       'new' => $new

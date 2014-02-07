@@ -18,7 +18,7 @@ class model {
    * Алиас таблицы с которой работаем в данный момент
    * @var string
    */
-  public $tblAlias;
+  public $_tableAlias;
 
   /**
    * Вызвать родительский метод без проверки в дочернем
@@ -28,12 +28,6 @@ class model {
 
   /**
    * Экземпляры моделей
-   * @var array
-   */
-  protected static $is = array();
-
-  /**
-   * Экземпляры моделей таблиц
    * @var array
    */
   protected static $instances = array();
@@ -47,44 +41,37 @@ class model {
   const ERROR_CLASS_NOT_FOUND    = 5003;
   const ERROR_PARAMS             = 5004;
   const ERROR_SQL_TYPE_NOT_FOUND = 5005;
+  const ERROR_CLASS_INSTANCE     = 5006;
 
-  protected function __construct() {
+  protected function __construct($name) {
     $this->tables = FC()->config('tables');
-  }
-
-  public static function i($name) {
-    $name = is_string($name) ? $name : '';
-    if ( ! isset(self::$is[$name])) {
-      self::$is[$name] = new self();
-    }
-    return self::$is[$name];
+    $this->_tableAlias = $name;
   }
 
   /**
-   * Получение экземпляра библиотеки для конкретной таблицы
+   * Возвращает модель
    * @param  string $name
    * @return self
    */
-  public function __get($name) {
+  final public static function i($name) {
     if (isset(self::$instances[$name])) {
       return self::$instances[$name];
     }
-    if (isset($this->tables->$name) || $this->_dynamicTable($name)) {
-      if ( ! ($class = $this->findModel($name))) {
-        $class = get_class($this);
-      }
-      $object = new $class();
-      $object->tblAlias = $name;
-      self::$instances[$name] = $object;
-      return $object;
+    if ( ! ($class = self::findModel($name))) {
+      $class = __CLASS__;
     }
-    if ( ! isset($this->$name)) {
-      throw new xException('Table '.$name.' not found', self::ERROR_TABLE_NOT_FOUND);
-    }
-    return $this->$name;
+    $model = new $class($name);
+    self::$instances[$name] = $model;
+    return $model;
   }
 
-  protected function findModel($name) {
+  /**
+   * Выполняет поиск модели
+   * @throws xException
+   * @param  string $name
+   * @return string
+   */
+  protected static function findModel($name) {
     $file = APP_PATH.'/model/'.$name.'.php';
     if ( ! file_exists($file)) {
       return null;
@@ -93,6 +80,9 @@ class model {
     $className = 'x'.ucfirst(end(explode('/', $name)));
     if ( ! class_exists($className)) {
       throw new xException("Class {$className} not found in file {$file}", self::ERROR_CLASS_NOT_FOUND);
+    }
+    if ( ! (is_subclass_of($className, __CLASS__))) {
+      throw new xException("Class {$className} is not a subclass of class ".__CLASS__, self::ERROR_CLASS_INSTANCE);
     }
     return $className;
   }
@@ -103,18 +93,18 @@ class model {
    * @throws xException
    */
   final public function tableParams() {
-    if (isset($this->_tableParams[$this->tblAlias])) {
-      return $this->_tableParams[$this->tblAlias];
+    if (isset($this->_tableParams[$this->_tableAlias])) {
+      return $this->_tableParams[$this->_tableAlias];
     }
-    if ( ! ($table = @$this->tables->{$this->tblAlias})) {
-      if ( ! ($table = $this->_dynamicTable($this->tblAlias))) {
-        throw new xException("Object table params not defined for alias {$this->tblAlias}", self::ERROR_TABLE_NOT_DEFINED);
+    if ( ! ($table = @$this->tables->{$this->_tableAlias})) {
+      if ( ! ($table = $this->_dynamicTable($this->_tableAlias))) {
+        throw new xException("Object table params not defined for alias {$this->_tableAlias}", self::ERROR_TABLE_NOT_DEFINED);
       }
     }
-    $table->name = $this->tblAlias;
+    $table->name = $this->_tableAlias;
     $table->id = isset($table->id) ? $table->id : 'id';
-    $this->_tableParams[$this->tblAlias] = $table;
-    return $this->_tableParams[$this->tblAlias];
+    $this->_tableParams[$this->_tableAlias] = $table;
+    return $this->_tableParams[$this->_tableAlias];
   }
 
   /**
@@ -125,7 +115,7 @@ class model {
   final public function table() {
     $tableName = $this->tableParams()->name;
     if (!$tableName) {
-      throw new xException("Object table name not defined for alias {$this->tblAlias}", self::ERROR_TABLE_NOT_DEFINED);
+      throw new xException("Object table name not defined for alias {$this->_tableAlias}", self::ERROR_TABLE_NOT_DEFINED);
     }
     return $tableName;
   }
@@ -138,7 +128,7 @@ class model {
   final public function idKey() {
     $idKey = $this->tableParams()->id;
     if (!$idKey) {
-      throw new xException("Object id key not defined for alias {$this->tblAlias}", self::ERROR_TABLE_NOT_DEFINED);
+      throw new xException("Object id key not defined for alias {$this->_tableAlias}", self::ERROR_TABLE_NOT_DEFINED);
     }
     return $idKey;
   }
@@ -161,10 +151,11 @@ class model {
 
   /**
    * Получение объекта, либо списка объектов
-   * @param array|int $filter - условия выборки объекта либо ID объекта
-   * @param mixed $order
-   * @param mixed $limit
-   * @return array|object
+   * @throws Exception
+   * @param  array|int $filter - условия выборки объекта либо ID объекта
+   * @param  mixed $order
+   * @param  mixed $limit
+   * @return modelObject|modelObject[]
    */
   final public function get($filter, $order = null, $limit = null) {
 
@@ -224,7 +215,7 @@ class model {
     if ($this->_force) {
       return $this->_force = false;
     }
-    $func = $name . ucfirst(preg_replace('/(?:\.|_)([a-z])/ie', "strtoupper('\\1')", $this->tblAlias)) . $suffix;
+    $func = $name . ucfirst(preg_replace('/(?:\.|_)([a-z])/ie', "strtoupper('\\1')", $this->_tableAlias)) . $suffix;
     if (is_callable(array($this, $func)) && method_exists($this, $func)) {
       return $func;
     }
@@ -485,6 +476,11 @@ class model {
 
 }
 
+/**
+ * Возвращает модель
+ * @param  string $name
+ * @return model
+ */
 function model($name = null) {
   return model::i($name);
 }
@@ -509,16 +505,16 @@ class modelObject {
     $table = $this->table();
     if (array_key_exists($name, (array)$table->fields)) {
       if (@$table->fields->$name->format->type == 'image' && $this->params->$name) {
-        return model()->images->get($this->params->$name);
+        return model('images')->get($this->params->$name);
       }
       if (@$table->fields->$name->format->type == 'list') {
-        return model()->{$table->fields->$name->format->table}->get($this->$name);
+        return model($table->fields->$name->format->table)->get($this->$name);
       }
       if (@$table->fields->$name->type == 'scope' && $table->fields->$name->format->type == 'image') {
-        $images = array_key_values(model()->{$table->fields->$name->format->table}->get(array(
+        $images = array_key_values(model($table->fields->$name->format->table)->get(array(
           $table->fields->$name->format->id => $this->id
         )), $table->fields->$name->format->image);
-        return model()->images->get(array('id' => $images));
+        return model('images')->get(array('id' => $images));
       }
     }
     else if (strpos($name, 'Btn') == strlen($name) - 3 || strpos($name, 'Button') == strlen($name) - 6) {

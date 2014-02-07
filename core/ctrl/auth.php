@@ -18,7 +18,7 @@ class authCtrl extends ctrl {
       if ( ! $login || ! $pass) {
         throw new xException("Не указаны необходимые параметры", self::ERROR_PARAMS);
       }
-      $user = array_shift(model()->users->get(array(
+      $user = array_shift(model('users')->get(array(
         'login' => $login,
         'pass'  => md5($pass.self::SALT)
       )));

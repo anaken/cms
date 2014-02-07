@@ -123,9 +123,9 @@ class format {
     $inputName = 'in_'.$field->name.($is_multiple ? '[]' : '');
     if ($object) {
       if ($field->format->table) {
-        $images = model()->{$field->format->table}->get(array($field->format->id => $object->{$object->table()->id}));
+        $images = model($field->format->table)->get(array($field->format->id => $object->{$object->table()->id}));
         if ($images) {
-          $images = model()->images->get(array('id' => array_key_values($images, $field->format->image)));
+          $images = model('images')->get(array('id' => array_key_values($images, $field->format->image)));
         }
       }
       else if ($object->{$field->name}()) {
@@ -145,7 +145,7 @@ class format {
       $except = explode(':', $field->format->except);
       $filter[$except[0].' !='] = $object->{$except[1]};
     }
-    $items = model()->$table->get($filter);
+    $items = model($table)->get($filter);
     $result = '<select name="in_'.$field->name.'" class="formatInList formatInEditableList inlist'.$field->name.'">';
     if ( ! @$field->required) {
       $result .= '<option value=""></option>';
@@ -167,7 +167,7 @@ class format {
     if ( ! $imageId) {
       return '';
     }
-    $image = model()->images->get($imageId);
+    $image = model('images')->get($imageId);
     $src = $params['width'] && $params['height'] ? $image->thumb($params['width'], $params['height']) : $image->src();
     return '<img src="'.$src.'">';
   }
@@ -178,7 +178,7 @@ class format {
     if ( ! $id) {
       return '';
     }
-    return model()->{$fieldConfig->format->table}->get($id)->{$fieldConfig->format->name};
+    return model($fieldConfig->format->table)->get($id)->{$fieldConfig->format->name};
   }
 
   function _out_password($field, $object, $params) {

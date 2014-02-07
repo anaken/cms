@@ -26,7 +26,7 @@ class crudCtrl extends ctrl {
     }
     $object = null;
     if ($id) {
-      $object = model()->$table->get($id);
+      $object = model($table)->get($id);
     }
     return $this->view->render('crud/form', array(
       'tableName' => $table,
@@ -41,7 +41,7 @@ class crudCtrl extends ctrl {
     $table = $this->post('_table_');
     $id = (int)$this->post('_id_');
     $objectTable = FC()->config('tables')->$table;
-    $object = $id ? model()->$table->get($id) : null;
+    $object = $id ? model($table)->get($id) : null;
     $data = $scope = array();
     foreach ($objectTable->fields as $fieldName => $field) {
       $postFieldName = 'in_'.$fieldName;
@@ -69,28 +69,28 @@ class crudCtrl extends ctrl {
           $object->$fieldName &&
           $object->$fieldName != $data[$fieldName]
       ) {
-        model()->images->del($object->$fieldName);
+        model('images')->del($object->$fieldName);
       }
     }
     if ( ! $data) {
       throw new Exception('Ошибка сохранения');
     }
     FC()->db->begin();
-    if ($id && model()->$table->get($id)) {
-      model()->$table->save($id, $data);
+    if ($id && model($table)->get($id)) {
+      model($table)->save($id, $data);
     }
     else {
       if ($id) {
         $data[$objectTable->id] = $id;
       }
-      $newId = model()->$table->save($data);
+      $newId = model($table)->save($data);
       $id = $id ? $id : $newId;
     }
 
     $this->_saveScope($id, $objectTable, $scope);
 
     FC()->db->commit();
-    $object = model()->$table->get($id);
+    $object = model($table)->get($id);
     $this->_json(array(
       'e'      => 0,
       'id'     => $id,
@@ -103,18 +103,18 @@ class crudCtrl extends ctrl {
     foreach ($scope as $fieldName => $values) {
       $fieldFormat = $objectTable->fields->$fieldName->format;
       if ($fieldFormat->type == 'image') {
-        $existImages = model()->{$fieldFormat->table}->get(array( $fieldFormat->id => $id ));
+        $existImages = model($fieldFormat->table)->get(array( $fieldFormat->id => $id ));
         $existImagesIds = array_key_values($existImages, $fieldFormat->image);
         $delImagesIds = array_diff($existImagesIds, $values);
         $newImagesIds = array_diff($values, $existImagesIds);
 
         if ($delImagesIds) {
-          model()->{$fieldFormat->table}->delList(array( $fieldFormat->image => $delImagesIds ));
-          model()->images->delList(array( 'id' => $delImagesIds ));
+          model($fieldFormat->table)->delList(array( $fieldFormat->image => $delImagesIds ));
+          model('images')->delList(array( 'id' => $delImagesIds ));
         }
 
         foreach ($newImagesIds as $value) {
-          model()->{$fieldFormat->table}->save(array(
+          model($fieldFormat->table)->save(array(
             $fieldFormat->id    => $id,
             $fieldFormat->image => $value,
           ));
@@ -126,7 +126,7 @@ class crudCtrl extends ctrl {
   function del() {
     $table = $this->post('object');
     $id = (int)$this->post('id');
-    model()->$table->del($id);
+    model($table)->del($id);
     $this->_json(array('e' => 0));
   }
 
@@ -161,7 +161,7 @@ class crudCtrl extends ctrl {
 
         FC()->db->begin();
 
-        $image_id = model()->images->save($data);
+        $image_id = model('images')->save($data);
 
         $dir = APP_PATH.'/../img/user/'.$image_id;
         if ( ! file_exists($dir)) {
@@ -205,7 +205,7 @@ class crudCtrl extends ctrl {
         $objectTable->order => $k + 1,
       );
     }
-    model()->$table->saveList($items);
+    model($table)->saveList($items);
     $this->_json(array('e' => 0));
   }
 
@@ -225,7 +225,7 @@ class crudCtrl extends ctrl {
     $limit = $this->post('limit');
     $table = FC()->config('tables')->$tableName;
     $order = $order ? $order : $table->id;
-    $objects = model()->$tableName->get($params, $order, $limit);
+    $objects = model($tableName)->get($params, $order, $limit);
     return $this->view->render('crud/report', array(
       'table'     => $table,
       'tableName' => $tableName,

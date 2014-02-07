@@ -6,7 +6,7 @@ class searchCtrl extends ctrl {
     $text = trim($_GET['text']);
     $this->request()->is_search_page = true;
     if ($text) {
-      model()->searches->save(array('name' => $text));
+      model('searches')->save(array('name' => $text));
     }
     view::subTitle('Поиск');
     return $this->view->render('search/index', array(

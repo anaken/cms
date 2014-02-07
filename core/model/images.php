@@ -7,7 +7,7 @@ class xImages extends model {
   function delImages($id, $params = array()) {
     $dir = APP_PATH.'/../img/user/'.$id.'/';
     funcs::removeDir($dir);
-    return model()->images->force()->del($id, $params);
+    return model('images')->force()->del($id, $params);
   }
   
 }

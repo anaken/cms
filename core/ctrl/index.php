@@ -22,7 +22,7 @@ class indexCtrl extends ctrl {
     }
     $objectId = $this->request()->item_id;
     $objectFilter = ($objectCall == 'text' ? array('link' => $link) : array('id' => $objectId));
-    $object = array_shift(model()->$objectType->get($objectFilter));
+    $object = array_shift(model($objectType)->get($objectFilter));
     if ($object) {
       return $this->$objectCall($object->id);
     }
@@ -39,11 +39,11 @@ class indexCtrl extends ctrl {
 
   function rubricCol() {
     if ($this->request()->rubric) {
-      $active = ($this->request()->rubric->parent_id > 0 ? model()->rubrics->get($this->request()->rubric->parent_id) : $this->request()->rubric);
-      $subrubrics = model()->rubrics->get(array('parent_id' => $active->id), 'sort, name');
+      $active = ($this->request()->rubric->parent_id > 0 ? model('rubrics')->get($this->request()->rubric->parent_id) : $this->request()->rubric);
+      $subrubrics = model('rubrics')->get(array('parent_id' => $active->id), 'sort, name');
     }
     return $this->view->render('index/rubricCol', array(
-      'rubrics'    => model()->rubrics->get(array('parent_id' => null), 'sort, name'),
+      'rubrics'    => model('rubrics')->get(array('parent_id' => null), 'sort, name'),
       'selected'   => $this->request()->rubric,
       'active'     => $active,
       'subrubrics' => $subrubrics,
@@ -52,7 +52,7 @@ class indexCtrl extends ctrl {
 
   function catalog($id = null) {
     $id = is_null($id) ? (int)array_shift($this->request()->params) : $id;
-    if ( ! $id || ! ($rubric = model()->rubrics->get($id))) {
+    if ( ! $id || ! ($rubric = model('rubrics')->get($id))) {
       $this->error404();
     }
     $this->request()->rubric = $rubric;
@@ -70,17 +70,17 @@ class indexCtrl extends ctrl {
         $this->error404();
       }
     }
-    if ( ! $id || ! ($rubric = model()->rubrics->get($id))) {
+    if ( ! $id || ! ($rubric = model('rubrics')->get($id))) {
       $this->error404();
     }
     $rubricIds = array($rubric->id);
-    $rubricIds = array_merge($rubricIds, array_key_values(model()->rubrics->get(array('parent_id' => $rubric->id)), 'id'));
+    $rubricIds = array_merge($rubricIds, array_key_values(model('rubrics')->get(array('parent_id' => $rubric->id)), 'id'));
     $goodsFilter = array('rubric_id' => $rubricIds);
     $manufacturersId = array_map('intval', array_keys((array)$this->post('manufacturers'), 'checked'));
     if ($manufacturersId) {
       $goodsFilter['manufacturer_id'] = $manufacturersId;
     }
-    $goods = model()->goods->get($goodsFilter);
+    $goods = model('goods')->get($goodsFilter);
     if ($this->request()->is_ajax) {
       ctrl::setLayout(null);
     }
@@ -91,11 +91,11 @@ class indexCtrl extends ctrl {
 
   function good($id = null) {
     $id = is_null($id) ? (int)array_shift($this->request()->params) : $id;
-    $good = model()->goods->get($id);
+    $good = model('goods')->get($id);
     if ( ! $good) {
       $this->error404();
     }
-    $rubric = model()->rubrics->get($good->rubric_id);
+    $rubric = model('rubrics')->get($good->rubric_id);
     $this->request()->rubric = $rubric;
     view::subTitle($rubric->name);
     view::subTitle($good->name);
@@ -108,12 +108,12 @@ class indexCtrl extends ctrl {
 
   function hit() {
     return $this->view->render('index/hit', array(
-      'good' => current(model()->goods->get(array('hit' => 1), 'rand()', 1))
+      'good' => current(model('goods')->get(array('hit' => 1), 'rand()', 1))
     ));
   }
 
   function newGoods() {
-    $goods = model()->goods->get(array('novelty' => 1), 'rand()', 3);
+    $goods = model('goods')->get(array('novelty' => 1), 'rand()', 3);
     $goodsList = $this->view->render('index/catalogGoods', array(
       'goods' => $goods
     ));
@@ -128,7 +128,7 @@ class indexCtrl extends ctrl {
       return array();
     }
     $goodsIds = array_map('intval', array_keys($_COOKIE['goods']));
-    $goods = model()->goods->get(array('id' => $goodsIds));
+    $goods = model('goods')->get(array('id' => $goodsIds));
     return $goods;
   }
 
@@ -181,14 +181,14 @@ class indexCtrl extends ctrl {
         throw new xException("Ошибка отправки заказа", self::ERROR_SEND_ORDER);
       }
       else {
-        $orderId = model()->orders->save(array(
+        $orderId = model('orders')->save(array(
           'created' => date('Y-m-d H:i:s'),
           'user'    => $params['name'],
           'phone'   => $params['phone'],
           'desc'    => $params['desc'],
         ));
         foreach ($_COOKIE['goods'] as $goodId => $goodCnt) {
-          model()->order_goods->save(array(
+          model('order_goods')->save(array(
             'order_id' => $orderId,
             'good_id'  => (int)$goodId,
             'cnt'      => (int)$goodCnt
@@ -215,7 +215,7 @@ class indexCtrl extends ctrl {
 
   protected function _getText($id) {
     if ($id) {
-      $text = model()->texts->get($id);
+      $text = model('texts')->get($id);
     }
     return @$text;
   }
@@ -245,7 +245,7 @@ class indexCtrl extends ctrl {
 
   function menu() {
     return $this->view->render('index/menu', array(
-      'items' => model()->menu->get(null, 'sort desc, name')
+      'items' => model('menu')->get(null, 'sort desc, name')
     ));
   }
 
