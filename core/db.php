@@ -312,7 +312,7 @@ class simpleDbResult
       return $r;
     }
     if (!$field) {
-      return array_shift($r);
+      return current($r);
     }
     return $r[$field];
   }

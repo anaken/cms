@@ -41,7 +41,7 @@ class model {
   const ERROR_CLASS_NOT_FOUND    = 5003;
   const ERROR_PARAMS             = 5004;
   const ERROR_SQL_TYPE_NOT_FOUND = 5005;
-  const ERROR_CLASS_INSTANCE     = 5006;
+  const ERROR_CLASS_INHERITANCE  = 5006;
 
   protected function __construct($name) {
     $this->tables = FC()->config('tables');
@@ -51,7 +51,7 @@ class model {
   /**
    * Возвращает модель
    * @param  string $name
-   * @return self
+   * @return model
    */
   final public static function i($name) {
     if (isset(self::$instances[$name])) {
@@ -82,7 +82,7 @@ class model {
       throw new xException("Class {$className} not found in file {$file}", self::ERROR_CLASS_NOT_FOUND);
     }
     if ( ! (is_subclass_of($className, __CLASS__))) {
-      throw new xException("Class {$className} is not a subclass of class ".__CLASS__, self::ERROR_CLASS_INSTANCE);
+      throw new xException("Class {$className} is not a subclass of class ".__CLASS__, self::ERROR_CLASS_INHERITANCE);
     }
     return $className;
   }
@@ -197,7 +197,7 @@ class model {
         return null;
       }
       $objects = $this->wrap(array($item));
-      $object = array_shift($objects);
+      $object = current($objects);
       $this->_cache($filter, $object);
       return $object;
     }
@@ -443,14 +443,17 @@ class model {
     $fields = $indexes = array();
     foreach ($table->fields as $fieldName => $fieldConfig) {
       $sqlType = @$typeMatch[$fieldConfig->type];
-      if (in_array($fieldConfig->type, array('scope'))) {
+      if (in_array($fieldConfig->type, array('scope', 'files'))) {
         continue;
       }
       if ( ! $sqlType) {
         throw new xException('Type '.$fieldConfig->type.' not found in sql-types', self::ERROR_SQL_TYPE_NOT_FOUND);
       }
-      if ( $fieldName != $table->id && in_array($fieldConfig->type, array('int', 'bool')) ) {
+      if ( $fieldName != $table->id && (in_array($fieldConfig->type, array('int', 'bool')) || @$fieldConfig->format->type == 'enum') ) {
         $indexes[] = ", KEY `{$fieldName}_idx` (`{$fieldName}`)";
+      }
+      if (@$fieldConfig->format->type == 'enum' && is_array($fieldConfig->format->values)) {
+        $sqlType = "enum('".implode("','", $fieldConfig->format->values)."')";
       }
       $required = @$fieldConfig->required || isset($fieldConfig->default) ? 'NOT NULL' : '';
       $increment = $fieldName == $table->id ? 'auto_increment primary key' : '';
@@ -489,6 +492,7 @@ class modelObject {
 
   var $tableName;
   var $params;
+  private $_files;
   protected static $tables;
 
   function __construct($table, $params) {
@@ -515,6 +519,18 @@ class modelObject {
           $table->fields->$name->format->id => $this->id
         )), $table->fields->$name->format->image);
         return model('images')->get(array('id' => $images));
+      }
+      if (@$table->fields->$name->type == 'files') {
+        if ( ! is_array($this->_files)) {
+          $files = model('files')->get(array(
+            'object_type' => $table->name,
+            'object_id'   => $this->id,
+          ));
+          foreach ($files as $file) {
+            $this->_files[$file->object_field][] = $file;
+          }
+        }
+        return (array)$this->_files[$name];
       }
     }
     else if (strpos($name, 'Btn') == strlen($name) - 3 || strpos($name, 'Button') == strlen($name) - 6) {

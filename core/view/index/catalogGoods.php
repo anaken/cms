@@ -8,11 +8,11 @@ $itemsPerRow = 3;
 
       <h4><a href="/good/<?=$good->link.'-'.$good->id?>"><?=$good->name?></a></h4>
 
-      <? if ($good->image_id()) { ?>
+      <? if ($image = current($good->images())) { ?>
       <div class="goodImage">
         <a href="/good/<?=$good->link.'-'.$good->id?>">
           <? if ($good->not_available) { ?><span class="goodNotAvailable">Нет в наличии</span><? } ?>
-          <img src="<?=$good->image_id()->thumb(230, 230)?>" alt="<?=$good->name?>"/>
+          <img src="<?=$image->thumb(230, 230)?>" alt="<?=$good->name?>"/>
         </a>
       </div>
       <? } ?>

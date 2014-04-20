@@ -141,17 +141,17 @@ var crud = {
   },
 
   upload: function(ident){
-    $('#file', $('#crudImageView'+ident+' iframe').contents()).click();
+    $('#file', $('#crudFileView'+ident+' iframe').contents()).click();
   },
 
   uploaded: function(ident, files){
     var inputs = '';
-    var inputName = $('#crudImageView'+ident).attr('data-name');
+    var inputName = $('#crudFileView'+ident).attr('data-name');
     for (var i in files) {
-      inputs += '<div class="crudImagesInput"><button button-type="2" icon="close" class="formatImageRemove objectDelBtn" onclick="crud.removeImage(this)">удалить</button><input onclick="crud.removeImage(this)" type="hidden" name="'+inputName+'" value="'+files[i].id+'"/><img src="'+files[i].file+'"/></div>';
+      inputs += '<div class="crudFilesInput"><button button-type="2" icon="close" class="formatFileRemove objectDelBtn" onclick="crud.removeFile(this)">удалить</button><input type="hidden" name="'+inputName+'" value="'+files[i].id+'"/>' + (files[i].type.match(/^image\/.+/) ? '<img src="'+files[i].file+'"/>' : '<a class="fileDownloadItem" href="'+files[i].file+'">'+files[i].name+'</a>') + '</div>';
     }
-    $('#crudImageView'+ident+' .crudImagesInputs').append(inputs);
-    handleHTML('#crudImageView'+ident+' .crudImagesInputs');
+    $('#crudFileView'+ident+' .crudFilesInputs').append(inputs);
+    handleHTML('#crudFileView'+ident+' .crudFilesInputs');
   },
 
   handleForm: function(name){
@@ -209,7 +209,7 @@ var crud = {
     });
   },
 
-  removeImage: function(btn) {
-    $(btn).closest('.crudImagesInput').remove();
+  removeFile: function(btn) {
+    $(btn).closest('.crudFilesInput').remove();
   }
 }

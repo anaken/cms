@@ -44,6 +44,69 @@
       }
     }
   },
+  "files":{
+    "caption" : "Файлы",
+    "id"      : "id",
+    "system"  : 1,
+    "fields"  : {
+      "id":{
+        "name"     : "id",
+        "caption"  : "ID",
+        "type"     : "int",
+        "hidden"   : 1
+      },
+      "object_id":{
+        "name"     : "object_id",
+        "caption"  : "Объект",
+        "type"     : "int",
+        "required" : 1
+      },
+      "object_type":{
+        "name"     : "object_type",
+        "caption"  : "Тип объекта",
+        "type"     : "string",
+        "required" : 1,
+        "format":{
+          "type"   : "enum",
+          "values" : ["news","goods","texts"]
+        }
+      },
+      "object_field":{
+        "name"     : "object_field",
+        "caption"  : "Поле объекта",
+        "type"     : "string",
+        "required" : 1
+      },
+      "name":{
+        "name"     : "name",
+        "caption"  : "Название",
+        "type"     : "string",
+        "required" : 1
+      },
+      "original_name":{
+        "name"     : "original_name",
+        "caption"  : "Название файла источника",
+        "type"     : "string",
+        "required" : 1
+      },
+      "type":{
+        "name"     : "type",
+        "caption"  : "Тип",
+        "type"     : "string",
+        "required" : 1
+      },
+      "ext":{
+        "name"     : "ext",
+        "caption"  : "Расширение",
+        "type"     : "string"
+      },
+      "size":{
+        "name"     : "size",
+        "caption"  : "Размер",
+        "type"     : "int"
+      }
+    }
+  },
   "rubrics":{
     "caption" : "Категории",
     "id"      : "id",
@@ -195,13 +258,10 @@
         "type"     : "bool",
         "default"  : 0
       },
-      "image_id":{
-        "name"     : "image_id",
+      "images":{
+        "name"     : "images",
         "caption"  : "Картинка",
-        "type"     : "int",
-        "format":{
-          "type"   : "image"
-        }
+        "type"     : "files"
       },
       "description":{
         "name"     : "description",
@@ -210,41 +270,6 @@
         "format":{
           "type"   : "editor"
         }
-      }
-    }
-  },
-  "images":{
-    "caption" : "Картинки",
-    "id"      : "id",
-    "system"  : 1,
-    "fields"  : {
-      "id":{
-        "name"     : "id",
-        "caption"  : "ID",
-        "type"     : "int",
-        "hidden"   : 1
-      },
-      "name":{
-        "name"     : "name",
-        "caption"  : "Название",
-        "type"     : "string",
-        "required" : 1
-      },
-      "type":{
-        "name"     : "type",
-        "caption"  : "Тип",
-        "type"     : "string",
-        "required" : 1
-      },
-      "ext":{
-        "name"     : "ext",
-        "caption"  : "Расширение",
-        "type"     : "string"
-      },
-      "size":{
-        "name"     : "size",
-        "caption"  : "Размер",
-        "type"     : "int"
       }
     }
   },
@@ -277,6 +302,11 @@
         "format":{
           "type"   : "editor"
         }
+      },
+      "files":{
+        "name"     : "files",
+        "caption"  : "Файлы",
+        "type"     : "files"
       }
     }
   },

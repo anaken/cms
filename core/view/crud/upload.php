@@ -6,7 +6,7 @@
   <? if ($uploaded) { ?>
   <script>
   window.parent.crud.uploaded('<?=$id?>',
-    [<? foreach ($uploaded as $i => $file) { ?><?=$i ? ',' : ''?>{id:'<?=$file['id']?>', file:'<?=$file['file']?>'}<? } ?>]
+    [<? foreach ($uploaded as $i => $file) { ?><?=$i ? ',' : ''?>{id:'<?=$file['id']?>', file:'<?=$file['file']?>', type:'<?=$file['type']?>', name:'<?=$file['name']?>'}<? } ?>]
   );
   </script>
   <? } ?>

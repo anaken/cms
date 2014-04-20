@@ -4,9 +4,9 @@
     <a href="/catalog/<?=$rubric->link.'-'.$rubric->id?>"><?=$rubric->name?></a> / <h1><?=$good->name?></h1>
   </div>
   <div class="block">
-    <? if ($good->image_id) { ?>
+    <? if ($image = current($good->images())) { ?>
     <div class="goodImage">
-      <a title="<?=$good->name?>" href="<?=$good->image_id()->src()?>" rel="fancybox"><img title="<?=$good->name?>" src="<?=$good->image_id()->thumb(392, 392)?>" alt="<?=$good->name?>"/></a>
+      <a title="<?=$good->name?>" href="<?=$image->path()?>" rel="fancybox"><img title="<?=$good->name?>" src="<?=$image->thumb(392, 392)?>" alt="<?=$good->name?>"/></a>
     </div>
     <? } ?>
     <? if ($good->price) { ?>

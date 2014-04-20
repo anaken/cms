@@ -8,5 +8,5 @@
 <? } ?>
 
 <? if (FC()->user->is_admin) { ?>
-<button onclick="crud.form('texts', '<?=$id?>', {<?=$link ? "defaults: {link: '{$link}'}" : ''?>})">Редактировать</button>
+<button onclick="crud.form(this, {table: 'texts', id: '<?=$id?>', <?=$link ? "defaults: {link: '{$link}'}" : ''?>})">Редактировать</button>
 <? } ?>

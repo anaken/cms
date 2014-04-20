@@ -190,7 +190,7 @@ h1 {
 .rubricsBlock .crudBtns button {
   font-size: 0.6em;
 }
-.imageViewPlace img {
+.imageViewPlace img, .fileViewPlace img {
   width: 200px;
 }
 .rubricGoodsList, .goodsBlock, .newGoods {

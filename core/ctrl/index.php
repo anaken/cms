@@ -22,7 +22,7 @@ class indexCtrl extends ctrl {
     }
     $objectId = $this->request()->item_id;
     $objectFilter = ($objectCall == 'text' ? array('link' => $link) : array('id' => $objectId));
-    $object = array_shift(model($objectType)->get($objectFilter));
+    $object = current(model($objectType)->get($objectFilter));
     if ($object) {
       return $this->$objectCall($object->id);
     }
@@ -51,7 +51,7 @@ class indexCtrl extends ctrl {
   }
 
   function catalog($id = null) {
-    $id = is_null($id) ? (int)array_shift($this->request()->params) : $id;
+    $id = is_null($id) ? (int)current($this->request()->params) : $id;
     if ( ! $id || ! ($rubric = model('rubrics')->get($id))) {
       $this->error404();
     }
@@ -90,7 +90,7 @@ class indexCtrl extends ctrl {
   }
 
   function good($id = null) {
-    $id = is_null($id) ? (int)array_shift($this->request()->params) : $id;
+    $id = is_null($id) ? (int)current($this->request()->params) : $id;
     $good = model('goods')->get($id);
     if ( ! $good) {
       $this->error404();
@@ -222,7 +222,7 @@ class indexCtrl extends ctrl {
 
   function text($id = null) {
     if ( ! is_numeric($id)) {
-      $id = (int)array_shift($this->request()->params);
+      $id = (int)current($this->request()->params);
     }
     $text = $this->_getText($id);
     view::subTitle($text->name);
@@ -234,7 +234,7 @@ class indexCtrl extends ctrl {
 
   function string($id = null) {
     if ( ! is_numeric($id)) {
-      $id = (int)array_shift($this->request()->params);
+      $id = (int)current($this->request()->params);
     }
     $text = $this->_getText($id);
     return $this->view->render('index/string', array(

@@ -41,14 +41,21 @@ class crudCtrl extends ctrl {
     $table = $this->post('_table_');
     $id = (int)$this->post('_id_');
     $objectTable = FC()->config('tables')->$table;
+    $objectTable->name = $table;
     $object = $id ? model($table)->get($id) : null;
-    $data = $scope = array();
+    $data = $scope = $files = array();
     foreach ($objectTable->fields as $fieldName => $field) {
       $postFieldName = 'in_'.$fieldName;
       if (
         ! isset($this->request()->post[$postFieldName]) ||
         @$field->hidden ||
-        @$field->type == 'password' && ! $this->post($postFieldName)) {
+        $field->type == 'password' && ! $this->post($postFieldName)
+      ) {
+        continue;
+      }
+
+      if ($field->type == 'files') {
+        $files[$fieldName] = $this->post($postFieldName);
         continue;
       }
 
@@ -62,20 +69,13 @@ class crudCtrl extends ctrl {
       if ( ! trim($data[$fieldName]) && @$field->required) {
         throw new Exception('Поле '.$field->caption.' должно быть заполнено', self::ERROR_USER_ERROR);
       }
-
-      if ($field->type == 'int' &&
-        @$field->format->type == 'image' &&
-          $object &&
-          $object->$fieldName &&
-          $object->$fieldName != $data[$fieldName]
-      ) {
-        model('images')->del($object->$fieldName);
-      }
     }
     if ( ! $data) {
       throw new Exception('Ошибка сохранения');
     }
+
     FC()->db->begin();
+
     if ($id && model($table)->get($id)) {
       model($table)->save($id, $data);
     }
@@ -88,8 +88,10 @@ class crudCtrl extends ctrl {
     }
 
     $this->_saveScope($id, $objectTable, $scope);
+    $this->_saveFiles($id, $objectTable, $files);
 
     FC()->db->commit();
+
     $object = model($table)->get($id);
     $this->_json(array(
       'e'      => 0,
@@ -97,6 +99,34 @@ class crudCtrl extends ctrl {
       'name'   => isset($objectTable->fields->name) ? $object->name : $object->id,
       'object' => ($object ? $object->data() : array()),
     ));
+  }
+
+  protected function _saveFiles($id, $objectTable, $files) {
+    $existFiles = model('files')->get(array(
+      'object_id'   => $id,
+      'object_type' => $objectTable->name,
+    ));
+    $existFilesByNames = array();
+    foreach ($existFiles as $existFile) {
+      $existFilesByNames[$existFile->object_field][] = $existFile->id;
+    }
+    foreach ($objectTable->fields as $fieldName => $field) {
+      if ($field->type != 'files') continue;
+      if ($newFiles = array_diff($files[$fieldName], (array)$existFilesByNames[$fieldName])) {
+        foreach ($newFiles as $newFileId) {
+          model('files')->save($newFileId, array(
+            'object_id'    => $id,
+            'object_type'  => $objectTable->name,
+            'object_field' => $fieldName
+          ));
+        }
+      }
+      if ($delFiles = array_diff((array)$existFilesByNames[$fieldName], $files[$fieldName])) {
+        foreach ($delFiles as $delFileId) {
+          model('files')->del($delFileId);
+        }
+      }
+    }
   }
 
   protected function _saveScope($id, $objectTable, $scope) {
@@ -161,14 +191,14 @@ class crudCtrl extends ctrl {
 
         FC()->db->begin();
 
-        $image_id = model('images')->save($data);
+        $file_id = model('files')->save($data);
 
-        $dir = APP_PATH.'/../img/user/'.$image_id;
+        $dir = xFiles::getFilesDir(1).'/'.$file_id;
         if ( ! file_exists($dir)) {
           mkdir($dir, 0755, true);
         }
-        $imgFile = APP_PATH.'/../img/user/'.$image_id.'/src.'.$ext;
-        $result = move_uploaded_file($file['tmp_name'], $imgFile);
+        $srcFile = $dir.'/src.'.$ext;
+        $result = move_uploaded_file($file['tmp_name'], $srcFile);
 
         if ($result) {
           FC()->db->commit();
@@ -178,8 +208,8 @@ class crudCtrl extends ctrl {
         }
 
         $uploaded[] = array_merge($data, array(
-          'id'   => $image_id,
-          'file' => '/img/user/'.$image_id.'/src.'.$ext
+          'id'   => $file_id,
+          'file' => xFiles::getFilesDir().'/'.$file_id.'/src.'.$ext,
         ));
       }
     }

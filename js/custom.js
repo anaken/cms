@@ -27,6 +27,13 @@ $(document).ready(function(){
         a4 = a3;
       }
       f = function(data, textStatus, jqXHR){
+        try {
+          var json = $.parseJSON(data);
+          if (json && json.e) {
+            alert(json.msg);
+          }
+        }
+        catch (e) {}
         $('.loading').remove();
         return af(data, textStatus, jqXHR);
       };

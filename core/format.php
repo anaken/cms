@@ -62,7 +62,7 @@ class format {
   public static function out($field, $object, $params = array()) {
     $fieldConfig = $object->table()->fields->$field;
     $format = (@$fieldConfig->format ? $fieldConfig->format->type : $fieldConfig->type);
-    if ( ! in_array($format, array('image', 'list', 'password'))) {
+    if ( ! in_array($format, array('files', 'list', 'password'))) {
       return $object->$field;
     }
     $method = '_out_'.$format;
@@ -116,28 +116,6 @@ class format {
     return '<textarea name="in_'.$field->name.'" class="ckeditor" id="in_'.$field->name.'">'.htmlspecialchars($value).'</textarea><script>var editor = CKEDITOR.replace("in_'.$field->name.'");CKFinder.setupCKEditor( editor, { basePath : "/ext/ckfinder/", rememberLastFolder : false } ) ;</script>';
   }
 
-  function _in_image($field, $object = null, $params = array()) {
-    $inputIdent = md5(time()*rand());
-    $img = '';
-    $is_multiple = $field->type == 'scope' ? 1 : 0;
-    $inputName = 'in_'.$field->name.($is_multiple ? '[]' : '');
-    if ($object) {
-      if ($field->format->table) {
-        $images = model($field->format->table)->get(array($field->format->id => $object->{$object->table()->id}));
-        if ($images) {
-          $images = model('images')->get(array('id' => array_key_values($images, $field->format->image)));
-        }
-      }
-      else if ($object->{$field->name}()) {
-        $images = array($object->{$field->name}());
-      }
-      foreach ($images as $image) {
-        $img .= '<div class="crudImagesInput"><button button-type="2" icon="close" class="formatImageRemove objectDelBtn" onclick="crud.removeImage(this)">удалить</button><input onclick="crud.removeImage(this)" type="hidden" name="'.$inputName.'" value="'.$image->id.'"/><img src="'.$image->src().'"/></div>';
-      }
-    }
-    return '<div class="imageViewPlace" id="crudImageView'.$inputIdent.'" data-name="'.$inputName.'" data-multiple="'.$is_multiple.'"><div class="crudImagesInputs">'.$img.'</div><iframe class="fileIframe" src="/crud/upload/?id='.$inputIdent.'&is_multiple='.$is_multiple.'"></iframe><button class="uploadImageBtn" onclick="crud.upload(\''.$inputIdent.'\')">Выбрать</button></div>';
-  }
-
   function _in_list($field, $object = null, $params = array()) {
     $table = $field->format->table;
     $filter = array();
@@ -162,14 +140,34 @@ class format {
     return $result;
   }
 
-  function _out_image($field, $object, $params) {
-    $imageId = (int)$object->$field;
-    if ( ! $imageId) {
-      return '';
+  function _in_files($field, $object = null, $params = array()) {
+    $inputIdent = md5(time()*rand());
+    $data = '';
+    $inputName = 'in_'.$field->name.'[]';
+    if ($object) {
+      $files = (array)$object->{$field->name}();
+      foreach ($files as $file) {
+        $filePreview = $file->isImage() ? '<img src="'.$file->path().'"/>' : '<a href="'.$file->path().'">'.$file->name.'</a>';
+        $data .= '<div class="crudFilesInput"><button button-type="2" icon="close" class="formatFileRemove objectDelBtn" onclick="crud.removeFile(this)">удалить</button><input type="hidden" name="'.$inputName.'" value="'.$file->id.'"/>'.$filePreview.'</div>';
+      }
     }
-    $image = model('images')->get($imageId);
-    $src = $params['width'] && $params['height'] ? $image->thumb($params['width'], $params['height']) : $image->src();
-    return '<img src="'.$src.'">';
+    return '<div class="fileViewPlace" id="crudFileView'.$inputIdent.'" data-name="'.$inputName.'" data-multiple="1"><div class="crudFilesInputs">'.$data.'</div><iframe class="fileIframe" src="/crud/upload/?id='.$inputIdent.'&is_multiple=1"></iframe><button class="uploadFileBtn" onclick="crud.upload(\''.$inputIdent.'\')">Выбрать</button></div>';
+  }
+
+  function _out_files($field, $object, $params) {
+    $files = $object->{$field}();
+    $result = array();
+    foreach ($files as $file) {
+      if ($file->isImage()) {
+        $params = array_merge(array('width' => 100, 'height' => 100), $params);
+        $src = $params['width'] && $params['height'] ? $file->thumb($params['width'], $params['height']) : $file->path();
+        $result[] = '<img src="'.$src.'">';
+      }
+      else {
+        $result[] = '<a href="'.$file->path().'">'.$file->name.'</a>';
+      }
+    }
+    return implode("\n", $result);
   }
 
   function _out_list($field, $object, $params) {
