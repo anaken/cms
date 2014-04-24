@@ -60,8 +60,8 @@ class ctrl {
   }
 
   final public function handle() {
-    $controller = $this->request()->calls[0];
-    $action = $this->request()->calls[1];
+    $controller = self::request()->calls[0];
+    $action = self::request()->calls[1];
     if (FC()->user->is_admin) {
       view::addJs('system');
       view::addJs('/ext/ckeditor/ckeditor');
@@ -85,7 +85,7 @@ class ctrl {
     }
   }
 
-  final public function request($part = null) {
+  final public static function request($part = null) {
     if ( ! self::$_request) {
       $uri = $_SERVER['REQUEST_URI'];
       $p = strpos($uri, '?');
@@ -125,7 +125,7 @@ class ctrl {
   }
 
   final public function post($name = null) {
-    return (is_null($name) ? $this->request()->post : $this->request()->post[$name]);
+    return (is_null($name) ? self::request()->post : self::request()->post[$name]);
   }
 
   private static function _findFile($name) {

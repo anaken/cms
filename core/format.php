@@ -5,6 +5,9 @@ class format {
   const ERROR_FORMAT_NOT_FOUND     = 211;
   const ERROR_CANNON_APPLY_PREFORM = 3311;
 
+  const BUTTON_TYPE_NORMAL = 1;
+  const BUTTON_TYPE_SMALL  = 2;
+
   protected static $instance;
 
   protected static $btnTypes = array(
@@ -43,7 +46,7 @@ class format {
     $crudParams = (object)array_intersect_key($params, array_flip(array(
       'defaults', 'appendToList'
     )));
-    $buttonType = $params['type'] ? $params['type'] : 1;
+    $buttonType = $params['type'] ? $params['type'] : self::BUTTON_TYPE_NORMAL;
     return '<button class="'.$button['act'].'ObjectBtn crudObjectBtn" button-type="'.$buttonType.'" data-table="'.$tableName.'" data-id="'.$id.'" icon="'.$button['icon'].'" onclick="return crud.'.$button['act'].'(this, '.htmlspecialchars(json_encode($crudParams)).')">'.$caption.'</button>';
   }
 
@@ -86,7 +89,7 @@ class format {
 
   function _in_bool($field, $object = null, $params = array()) {
     $value = ($object ? $object->{$field->name} : @$params['value']);
-    return '<input class="crudCheckbox" type="checkbox" name="in_'.$field->name.'"'.($value || $field->default ? ' checked' : '').' value="1"/>';
+    return '<input class="crudCheckbox" type="checkbox" name="in_'.$field->name.'"'.($value || ! $object && $field->default ? ' checked' : '').' value="1"/>';
   }
 
   function _in_password($field, $object = null, $params = array()) {

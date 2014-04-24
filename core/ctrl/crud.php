@@ -7,7 +7,7 @@ class crudCtrl extends ctrl {
   const ERROR_ACCESS_DENIED = 5601;
 
   protected function init() {
-    if ($this->request()->calls[1] == 'install' && self::INSTALL_AVAILABLE) {
+    if (self::request()->calls[1] == 'install' && self::INSTALL_AVAILABLE) {
       return;
     }
     if ( ! FC()->user->is_admin) {
@@ -47,7 +47,7 @@ class crudCtrl extends ctrl {
     foreach ($objectTable->fields as $fieldName => $field) {
       $postFieldName = 'in_'.$fieldName;
       if (
-        ! isset($this->request()->post[$postFieldName]) ||
+        ! isset(self::request()->post[$postFieldName]) ||
         @$field->hidden ||
         $field->type == 'password' && ! $this->post($postFieldName)
       ) {
@@ -112,7 +112,7 @@ class crudCtrl extends ctrl {
     }
     foreach ($objectTable->fields as $fieldName => $field) {
       if ($field->type != 'files') continue;
-      if ($newFiles = array_diff($files[$fieldName], (array)$existFilesByNames[$fieldName])) {
+      if ($newFiles = array_diff((array)$files[$fieldName], (array)$existFilesByNames[$fieldName])) {
         foreach ($newFiles as $newFileId) {
           model('files')->save($newFileId, array(
             'object_id'    => $id,
@@ -121,7 +121,7 @@ class crudCtrl extends ctrl {
           ));
         }
       }
-      if ($delFiles = array_diff((array)$existFilesByNames[$fieldName], $files[$fieldName])) {
+      if ($delFiles = array_diff((array)$existFilesByNames[$fieldName], (array)$files[$fieldName])) {
         foreach ($delFiles as $delFileId) {
           model('files')->del($delFileId);
         }
@@ -214,8 +214,8 @@ class crudCtrl extends ctrl {
       }
     }
     else {
-      $id = $this->request()->get['id'];
-      $is_multiple = $this->request()->get['is_multiple'];
+      $id = self::request()->get['id'];
+      $is_multiple = self::request()->get['is_multiple'];
     }
     return $this->view->render('crud/upload', array(
       'id'          => $id,

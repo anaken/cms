@@ -419,7 +419,7 @@ class model {
   final protected function log($id, $data = null) {
     $dir = APP_PATH.'/logs/model/'.$this->table();
     if ( ! file_exists($dir)) {
-      mkdir($dir, 0700);
+      mkdir($dir, 0700, 1);
     }
     file_put_contents($dir.'/'.date('Y-m').'.log', date('d H:i:s: [').$_SERVER['REMOTE_ADDR']."]: [".(is_array($id) ? 'add' : 'edit:'.$id)."] ".funcs::varToLog($data ? $data : $id)."\n", FILE_APPEND);
   }

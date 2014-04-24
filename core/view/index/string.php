@@ -3,5 +3,5 @@
 <? } ?>
 
 <? if (FC()->user->is_admin) { ?>
-<button class="objectEditBtn" onclick="crud.form('texts'<?=$id ? ','.$id : ''?>)">Редактировать</button>
+<?=format::btn('edit', 'texts', $id, array('type' => format::BUTTON_TYPE_SMALL))?>
 <? } ?>

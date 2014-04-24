@@ -4,7 +4,7 @@ class searchCtrl extends ctrl {
 
   function index() {
     $text = trim($_GET['text']);
-    $this->request()->is_search_page = true;
+    self::request()->is_search_page = true;
     if ($text) {
       model('searches')->save(array('name' => $text));
     }
@@ -50,7 +50,7 @@ class searchCtrl extends ctrl {
   }
 
   function block() {
-    if (@$this->request()->is_search_page) {
+    if (@self::request()->is_search_page) {
       return '';
     }
     return $this->view->render('search/block');

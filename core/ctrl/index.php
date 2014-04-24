@@ -14,13 +14,13 @@ class indexCtrl extends ctrl {
       'catalog' => 'rubrics',
       'good'    => 'goods'
     );
-    $objectCall = isset($type[$this->request()->calls[0]]) ? $this->request()->calls[0] : 'text';
-    $link = urldecode(implode('/', $this->request()->calls));
+    $objectCall = isset($type[self::request()->calls[0]]) ? self::request()->calls[0] : 'text';
+    $link = urldecode(implode('/', self::request()->calls));
     $objectType = @$type[$objectCall];
     if ( ! $objectType || ! $link) {
       throw new xException("Action {$link} not defined", self::ERROR_ACTION_NOT_FOUND);
     }
-    $objectId = $this->request()->item_id;
+    $objectId = self::request()->item_id;
     $objectFilter = ($objectCall == 'text' ? array('link' => $link) : array('id' => $objectId));
     $object = current(model($objectType)->get($objectFilter));
     if ($object) {
@@ -38,24 +38,24 @@ class indexCtrl extends ctrl {
   }
 
   function rubricCol() {
-    if ($this->request()->rubric) {
-      $active = ($this->request()->rubric->parent_id > 0 ? model('rubrics')->get($this->request()->rubric->parent_id) : $this->request()->rubric);
+    if (self::request()->rubric) {
+      $active = (self::request()->rubric->parent_id > 0 ? model('rubrics')->get(self::request()->rubric->parent_id) : self::request()->rubric);
       $subrubrics = model('rubrics')->get(array('parent_id' => $active->id), 'sort, name');
     }
     return $this->view->render('index/rubricCol', array(
       'rubrics'    => model('rubrics')->get(array('parent_id' => null), 'sort, name'),
-      'selected'   => $this->request()->rubric,
+      'selected'   => self::request()->rubric,
       'active'     => $active,
       'subrubrics' => $subrubrics,
     ));
   }
 
   function catalog($id = null) {
-    $id = is_null($id) ? (int)current($this->request()->params) : $id;
+    $id = is_null($id) ? (int)current(self::request()->params) : $id;
     if ( ! $id || ! ($rubric = model('rubrics')->get($id))) {
       $this->error404();
     }
-    $this->request()->rubric = $rubric;
+    self::request()->rubric = $rubric;
     view::subTitle($rubric->name);
     return $this->view->render('index/catalog', array(
       'rubric'    => $rubric,
@@ -81,7 +81,7 @@ class indexCtrl extends ctrl {
       $goodsFilter['manufacturer_id'] = $manufacturersId;
     }
     $goods = model('goods')->get($goodsFilter);
-    if ($this->request()->is_ajax) {
+    if (self::request()->is_ajax) {
       ctrl::setLayout(null);
     }
     return $this->view->render('index/catalogGoods', array(
@@ -90,13 +90,13 @@ class indexCtrl extends ctrl {
   }
 
   function good($id = null) {
-    $id = is_null($id) ? (int)current($this->request()->params) : $id;
+    $id = is_null($id) ? (int)current(self::request()->params) : $id;
     $good = model('goods')->get($id);
     if ( ! $good) {
       $this->error404();
     }
     $rubric = model('rubrics')->get($good->rubric_id);
-    $this->request()->rubric = $rubric;
+    self::request()->rubric = $rubric;
     view::subTitle($rubric->name);
     view::subTitle($good->name);
     view::addLib('fancybox');
@@ -144,7 +144,7 @@ class indexCtrl extends ctrl {
       'sum'   => $sum,
       'cnt'   => $cnt
     ));
-    if ($this->request()->is_ajax) {
+    if (self::request()->is_ajax) {
       die((string)$result);
     }
     return $result;
@@ -222,7 +222,7 @@ class indexCtrl extends ctrl {
 
   function text($id = null) {
     if ( ! is_numeric($id)) {
-      $id = (int)current($this->request()->params);
+      $id = (int)current(self::request()->params);
     }
     $text = $this->_getText($id);
     view::subTitle($text->name);
@@ -234,7 +234,7 @@ class indexCtrl extends ctrl {
 
   function string($id = null) {
     if ( ! is_numeric($id)) {
-      $id = (int)current($this->request()->params);
+      $id = (int)current(self::request()->params);
     }
     $text = $this->_getText($id);
     return $this->view->render('index/string', array(

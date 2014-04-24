@@ -7,7 +7,7 @@ class newsCtrl extends ctrl {
   }
 
   function defaults() {
-    $newId = (int)$this->request()->item_id;
+    $newId = (int)self::request()->item_id;
     $new = model('news')->get($newId);
     if ( ! $new) {
       throw new xException('Action {$newName} not found in '.get_class($this), self::ERROR_ACTION_NOT_FOUND);

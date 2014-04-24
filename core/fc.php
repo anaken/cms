@@ -81,7 +81,7 @@ class FC {
     }
     $r = self::log('exceptions', "[".$e->getCode()."] ".(method_exists($e, 'getSystemMessage') ? $e->getSystemMessage() : '').".\nUser message: ".$e->getMessage()."\nFile: ".$e->getFile().':'.$e->getLine()."\nTrace: ".$e->getTraceAsString());
     //$this->sendErrorMail($error);
-    if (ctrl()->request()->is_ajax) {
+    if (ctrl::request()->is_ajax) {
       ob_clean();
       ctrl()->_json(array('e' => ($e->getCode() ? $e->getCode() : 1), 'msg' => $e->getMessage()));
     }
@@ -94,7 +94,7 @@ class FC {
     }
     $r = self::log('errors', "[".$errno."] ".$errstr."\nFile: ".$errfile.':'.$errline);
     //$this->sendErrorMail($error);
-    if (ctrl()->request()->is_ajax) {
+    if (ctrl::request()->is_ajax) {
       ob_clean();
       ctrl()->_json(array('e' => 1, 'msg' => 'Системная ошибка'));
     }
@@ -108,7 +108,7 @@ class FC {
     }
     self::log('shutdowns', print_r($error,1));
     //$this->sendErrorMail(print_r($error,1));
-    if (ctrl()->request()->is_ajax) {
+    if (ctrl::request()->is_ajax) {
       //ob_clean();
       //ctrl()->_json(array('e' => 1, 'msg' => $error['message']));
     }
