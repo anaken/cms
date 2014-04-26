@@ -439,7 +439,7 @@ class model {
     if ( ! isset($tables->$tableName)) {
       throw new xException('Error creating table, descrition not defined for table '.$tableName, self::ERROR_TABLE_NOT_DEFINED);
     }
-    $existTableData = FC()->db->select('*', $tableName, array('limit' => 1))->row();
+    $existTableDataFields = FC()->db->select('*', $tableName, array('limit' => 1))->row();
     $table = $tables->$tableName;
     $fields = $indexes = array();
     $previousField = null;
@@ -452,7 +452,11 @@ class model {
         throw new xException('Type '.$fieldConfig->type.' not found in sql-types', self::ERROR_SQL_TYPE_NOT_FOUND);
       }
       if ( $fieldName != $table->id && (in_array($fieldConfig->type, array('int', 'bool')) || @$fieldConfig->format->type == 'enum') ) {
-        $indexes[] = ", KEY `{$fieldName}_idx` (`{$fieldName}`)";
+        $index = "KEY `{$fieldName}_idx` (`{$fieldName}`)";
+        $indexes[] = $index;
+      }
+      else {
+        $index = null;
       }
       if (@$fieldConfig->format->type == 'enum' && is_array($fieldConfig->format->values)) {
         $sqlType = "enum('".implode("','", $fieldConfig->format->values)."')";
@@ -462,26 +466,40 @@ class model {
       $default = isset($fieldConfig->default) ? 'DEFAULT '.$fieldConfig->default : '';
       $comment = str_replace("'", "''", $fieldConfig->caption);
       $field = "`{$fieldName}` {$sqlType} {$required} {$increment} {$default} COMMENT '{$comment}'";
-      if ($existTableData && ! array_key_exists($fieldName, $existTableData)) {
+      if ($existTableDataFields && ! array_key_exists($fieldName, $existTableDataFields)) {
         FC()->db->query("
-          ALTER TABLE `{$tableName}` ADD COLUMN {$field} ".($previousField ? " AFTER {$previousField}" : '')."
+          ALTER TABLE `{$tableName}` ADD COLUMN {$field} ".($previousField ? " AFTER `{$previousField}`" : '')."
         ");
+        if ($index) {
+          FC()->db->query("
+            ALTER TABLE `{$tableName}` ADD {$index}
+          ");
+        }
       }
-      else if ( ! $existTableData) {
+      else if ( ! $existTableDataFields) {
         $fields[] = $field;
       }
       $previousField = $fieldName;
     }
     $begins = @$table->begins ? 'AUTO_INCREMENT='.$table->begins : '';
     $tableComment = str_replace("'", "''", $table->caption);
-    if ( ! $existTableData) {
+    if ($existTableDataFields) {
+      foreach ($existTableDataFields as $existFieldName => $existFieldData) {
+        if ( ! array_key_exists($existFieldName, $table->fields)) {
+          FC()->db->query("
+            ALTER TABLE `{$tableName}` DROP COLUMN `{$existFieldName}`
+          ");
+        }
+      }
+    }
+    else {
       FC()->db->query("
         DROP TABLE IF EXISTS {$tableName}
       ");
       $sql = "
         CREATE TABLE IF NOT EXISTS `{$tableName}` (
           ".implode(',', $fields)."
-          ".implode(' ', $indexes)."
+          ".($indexes ? ', '.implode(',', $indexes) : '')."
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='{$tableComment}' {$begins};
       ";
       FC()->db->query($sql);
