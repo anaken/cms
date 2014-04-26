@@ -439,8 +439,10 @@ class model {
     if ( ! isset($tables->$tableName)) {
       throw new xException('Error creating table, descrition not defined for table '.$tableName, self::ERROR_TABLE_NOT_DEFINED);
     }
+    $existTableData = FC()->db->select('*', $tableName, array('limit' => 1))->row();
     $table = $tables->$tableName;
     $fields = $indexes = array();
+    $previousField = null;
     foreach ($table->fields as $fieldName => $fieldConfig) {
       $sqlType = @$typeMatch[$fieldConfig->type];
       if (in_array($fieldConfig->type, array('scope', 'files'))) {
@@ -459,22 +461,37 @@ class model {
       $increment = $fieldName == $table->id ? 'auto_increment primary key' : '';
       $default = isset($fieldConfig->default) ? 'DEFAULT '.$fieldConfig->default : '';
       $comment = str_replace("'", "''", $fieldConfig->caption);
-      $fields[] = "`{$fieldName}` {$sqlType} {$required} {$increment} {$default} COMMENT '{$comment}'";
+      $field = "`{$fieldName}` {$sqlType} {$required} {$increment} {$default} COMMENT '{$comment}'";
+      if ($existTableData && ! array_key_exists($fieldName, $existTableData)) {
+        FC()->db->query("
+          ALTER TABLE `{$tableName}` ADD COLUMN {$field} ".($previousField ? " AFTER {$previousField}" : '')."
+        ");
+      }
+      else if ( ! $existTableData) {
+        $fields[] = $field;
+      }
+      $previousField = $fieldName;
     }
     $begins = @$table->begins ? 'AUTO_INCREMENT='.$table->begins : '';
     $tableComment = str_replace("'", "''", $table->caption);
-    $sql = "
-      CREATE TABLE IF NOT EXISTS `{$tableName}` (
-        ".implode(',', $fields)."
-        ".implode(' ', $indexes)."
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='{$tableComment}' {$begins};
-    ";
-    FC()->db->query($sql);
-    if (@$table->data) {
-      foreach ($table->data as $data) {
-        FC()->db->insert($tableName, (array)$data, array('ignore' => 1));
+    if ( ! $existTableData) {
+      FC()->db->query("
+        DROP TABLE IF EXISTS {$tableName}
+      ");
+      $sql = "
+        CREATE TABLE IF NOT EXISTS `{$tableName}` (
+          ".implode(',', $fields)."
+          ".implode(' ', $indexes)."
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='{$tableComment}' {$begins};
+      ";
+      FC()->db->query($sql);
+      if (@$table->data) {
+        foreach ($table->data as $data) {
+          FC()->db->insert($tableName, (array)$data, array('ignore' => 1));
+        }
       }
     }
+
   }
 
 }
