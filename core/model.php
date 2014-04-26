@@ -439,7 +439,14 @@ class model {
     if ( ! isset($tables->$tableName)) {
       throw new xException('Error creating table, descrition not defined for table '.$tableName, self::ERROR_TABLE_NOT_DEFINED);
     }
-    $existTableDataFields = FC()->db->select('*', $tableName, array('limit' => 1))->row();
+    try {
+      $existTableDataFields = FC()->db->select('*', $tableName, array('limit' => 1))->row();
+    }
+    catch (Exception $e) {
+      if ($e->getCode() != simpleDb::ERROR_TABLE_NOT_EXIST) {
+        throw $e;
+      }
+    }
     $table = $tables->$tableName;
     $fields = $indexes = array();
     $previousField = null;
