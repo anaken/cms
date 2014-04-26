@@ -131,7 +131,13 @@ var crud = {
       var childs = result.childs;
       var childsHTML = [];
       for (var i in childs) {
+        var child = {name:childs[i].name, params: {}};
+        child.params[i] = id;
         childsHTML.push('<li><a onclick="crud.report(\''+childs[i].name+'\', {params: {\''+i+'\': \''+id+'\'}, edit: 1, order: \'id desc\', limit: 50});$(this).closest(\'.crudChilds\').hide();return false" href="#">'+childs[i].caption+'</a></li>');
+      }
+      if (childsHTML.length) {
+        crud.report(child.name, {params: child.params, edit: 1, order: 'id desc', limit: 50});
+        return;
       }
       var menu = '<ul class="crudChilds">'+childsHTML.join('')+'</ul>';
       $(self).closest('.crudChildsPlace').append(menu);
