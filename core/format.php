@@ -106,7 +106,7 @@ class format {
     }
     $value = $object || $value ? $value : $field->default;
     $editable = isset($field->editable) && ! $field->editable ? 'disabled' : '';
-    return '<input '.$editable.' type="text" name="in_'.$field->name.'" value="'.$value.'"'.implode('', (array)$attr).'/>';
+    return '<input '.$editable.' type="text" name="in_'.$field->name.'" value="'.htmlspecialchars($value).'"'.implode('', (array)$attr).'/>';
   }
 
   function _in_text($field, $object = null, $params = array()) {
