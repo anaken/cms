@@ -458,7 +458,16 @@ class model {
       if ( ! $sqlType) {
         throw new xException('Type '.$fieldConfig->type.' not found in sql-types', self::ERROR_SQL_TYPE_NOT_FOUND);
       }
-      if ( $fieldName != $table->id && (in_array($fieldConfig->type, array('int', 'bool')) || @$fieldConfig->format->type == 'enum') ) {
+      if (
+        $fieldName != $table->id &&
+        (
+          (
+            in_array($fieldConfig->type, array('int', 'bool')) ||
+            @$fieldConfig->format->type == 'enum'
+          ) && ! @$fieldConfig->index ||
+            @$fieldConfig->index
+        )
+      ) {
         $index = "KEY `{$fieldName}_idx` (`{$fieldName}`)";
         $indexes[] = $index;
       }

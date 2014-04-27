@@ -129,6 +129,7 @@
         "name"     : "link",
         "caption"  : "Ссылка",
         "type"     : "string",
+        "index"    : 1,
         "hidden"   : 1,
         "preform"  : {
           "type"   : "link",
