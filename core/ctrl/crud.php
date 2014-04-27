@@ -171,6 +171,9 @@ class crudCtrl extends ctrl {
   }
 
   function upload() {
+    $id = self::request()->get['id'];
+    $is_multiple = self::request()->get['is_multiple'];
+
     if ($_FILES) {
       $id = $this->post('id');
       $is_multiple = $this->post('is_multiple');
@@ -212,10 +215,6 @@ class crudCtrl extends ctrl {
           'file' => xFiles::getFilesDir().'/'.$file_id.'/src.'.$ext,
         ));
       }
-    }
-    else {
-      $id = self::request()->get['id'];
-      $is_multiple = self::request()->get['is_multiple'];
     }
     return $this->view->render('crud/upload', array(
       'id'          => $id,

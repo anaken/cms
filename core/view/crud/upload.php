@@ -11,10 +11,8 @@
   </script>
   <? } ?>
 
-  <form action="/crud/upload/" method="post" enctype="multipart/form-data" id="form">
+  <form action="/crud/upload/?id=<?=$id?>&is_multiple=<?=$is_multiple?>" method="post" enctype="multipart/form-data" id="form">
     <input onchange="this.form.submit()" id="file" type="file" name="file[]" <?=$is_multiple ? 'multiple' : ''?>/>
-    <input type="hidden" name="id" value="<?=$id?>"/>
-    <input type="hidden" name="is_multiple" value="<?=$is_multiple?>"/>
   </form>
 
   </body>
