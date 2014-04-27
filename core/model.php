@@ -562,7 +562,7 @@ class modelObject {
       if (@$table->fields->$name->format->type == 'image' && $this->params->$name) {
         return model('images')->get($this->params->$name);
       }
-      if (@$table->fields->$name->format->type == 'list') {
+      if (@$table->fields->$name->format->type == 'list' && $this->$name) {
         return model($table->fields->$name->format->table)->get($this->$name);
       }
       if (@$table->fields->$name->type == 'scope' && $table->fields->$name->format->type == 'image') {
