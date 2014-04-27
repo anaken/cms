@@ -371,7 +371,7 @@ class model {
   final protected function _preformData($data) {
     $fields = $this->tableParams()->fields;
     foreach ($fields as $key => $field) {
-      if (isset($field->preform)) {
+      if (isset($field->preform) && (@$field->hidden || ! $data[$key])) {
         try {
           $data[$key] = format::preform($field, $data);
         }
