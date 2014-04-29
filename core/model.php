@@ -583,6 +583,9 @@ class modelObject {
         }
         return (array)$this->_files[$name];
       }
+      if (@$table->fields->$name->type == 'date') {
+        return date($args[0], strtotime($this->{$name}));
+      }
     }
     else if (strpos($name, 'Btn') == strlen($name) - 3 || strpos($name, 'Button') == strlen($name) - 6) {
       $type = strpos($name, 'Btn') == strlen($name) - 3 ? 2 : 1;
