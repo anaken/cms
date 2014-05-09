@@ -83,15 +83,15 @@
         "type"     : "string",
         "required" : 1
       },
-      "original_name":{
-        "name"     : "original_name",
-        "caption"  : "Название файла источника",
-        "type"     : "string",
+      "is_image":{
+        "name"     : "is_image",
+        "caption"  : "Файл является картинкой",
+        "type"     : "bool",
         "required" : 1
       },
       "type":{
         "name"     : "type",
-        "caption"  : "Тип",
+        "caption"  : "MIME Тип",
         "type"     : "string",
         "required" : 1
       },
@@ -99,6 +99,16 @@
         "name"     : "ext",
         "caption"  : "Расширение",
         "type"     : "string"
+      },
+      "width":{
+        "name"     : "width",
+        "caption"  : "Ширина картинки",
+        "type"     : "int"
+      },
+      "height":{
+        "name"     : "height",
+        "caption"  : "Высота картинки",
+        "type"     : "int"
       },
       "size":{
         "name"     : "size",

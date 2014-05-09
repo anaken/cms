@@ -163,7 +163,8 @@ var crud = {
   handleForm: function(name){
     handleHTML('.crudForm'+name);
     handleSystemHTML('.crudForm'+name);
-    $('.crudForm'+name+' .crudFormTable .formatInList').change(function(){
+    var $formTable = $('.crudForm'+name+' .crudFormTable');
+    $formTable.find('.formatInList').change(function(){
       var $tableInput = $(this).closest('.crudFormTable').find('input[name="_table_"]');
       if ( ! $tableInput.length) {
         return;
@@ -171,8 +172,8 @@ var crud = {
       $.cookie('crud.'+$tableInput.val()+'.'+$(this).attr('name'), $(this).val(), { path: '/', expires: 365 });
     });
 
-    var $tableInput = $('.crudForm'+name+' .crudFormTable').find('input[name="_table_"]');
-    if ($tableInput.length) {
+    var $tableInput = $formTable.find('input[name="_table_"]');
+    if ($tableInput.length && ! parseInt($formTable.find('input[name="_id_"]').val())) {
       $('.crudForm'+name+' .crudFormTable .formatInList').each(function(){
         if ($(this).val()) {
           return;

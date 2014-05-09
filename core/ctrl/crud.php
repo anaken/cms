@@ -2,6 +2,8 @@
 
 class crudCtrl extends ctrl {
 
+  const REPORT_ITEMS_PER_PAGE = 10;
+
   const INSTALL_AVAILABLE = true;
 
   const ERROR_ACCESS_DENIED = 5601;
@@ -93,7 +95,7 @@ class crudCtrl extends ctrl {
     FC()->db->commit();
 
     $object = model($table)->get($id);
-    $this->_json(array(
+    return $this->_json(array(
       'e'      => 0,
       'id'     => $id,
       'name'   => isset($objectTable->fields->name) ? $object->name : $object->id,
@@ -157,13 +159,13 @@ class crudCtrl extends ctrl {
     $table = $this->post('object');
     $id = (int)$this->post('id');
     model($table)->del($id);
-    $this->_json(array('e' => 0));
+    return $this->_json(array('e' => 0));
   }
 
   function childs() {
     $table = $this->post('object');
     $childs = modelObjectTable::getTableChilds($table);
-    $this->_json(array(
+    return $this->_json(array(
       'e'      => 0,
       'name'   => $table,
       'childs' => $childs,
@@ -185,12 +187,22 @@ class crudCtrl extends ctrl {
           $file[$p] = $_FILES['file'][$p][$i];
         }
         $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+
+        $is_image = preg_match('|^image\/.*|', $file['type']);
+
         $data = array(
-          'name' => $file['name'],
-          'type' => $file['type'],
-          'ext'  => $ext,
-          'size' => $file['size']
+          'name'     => $file['name'],
+          'type'     => $file['type'],
+          'is_image' => $is_image,
+          'ext'      => $ext,
+          'size'     => $file['size']
         );
+
+        if ($is_image) {
+          $imageSize = getimagesize($file['tmp_name']);
+          $data['width']  = $imageSize[0];
+          $data['height'] = $imageSize[1];
+        }
 
         FC()->db->begin();
 
@@ -235,7 +247,7 @@ class crudCtrl extends ctrl {
       );
     }
     model($table)->saveList($items);
-    $this->_json(array('e' => 0));
+    return $this->_json(array('e' => 0));
   }
 
   function install() {
@@ -252,15 +264,22 @@ class crudCtrl extends ctrl {
     $params = $this->post('params');
     $order = $this->post('order');
     $limit = $this->post('limit');
+    $page = $this->post('page');
+    $page = $page ? $page - 1 : 0;
     $table = FC()->config('tables')->$tableName;
     $order = $order ? $order : $table->id;
-    $objects = model($tableName)->get($params, $order, $limit);
+    $count = model($tableName)->count($params);
+    $objects = model($tableName)->get($params, $order, ($limit * $page) . ',' . $limit);
     return $this->view->render('crud/report', array(
       'table'     => $table,
       'tableName' => $tableName,
       'objects'   => $objects,
       'editable'  => $this->post('edit'),
-      'defaults'  => $params
+      'defaults'  => $params,
+      'pages'     => $this->_pages(ceil($count / self::REPORT_ITEMS_PER_PAGE), array(
+          'action' => 'onclick="crud.report(\''.$tableName.'\', {edit: 1, order: \'id desc\', limit: '.crudCtrl::REPORT_ITEMS_PER_PAGE.', page: [p]});return false"',
+          'tag'    => 'button'
+        ))
     ));
   }
 

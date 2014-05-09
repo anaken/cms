@@ -203,6 +203,22 @@ class funcs
     }
   }
 
+  public static function month($n, $case = 1)
+  {
+    $monthes1 = array(
+      'январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'
+    );
+    $monthes2 = array(
+      'января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
+    );
+    return ${'monthes' . $case}[$n - 1];
+  }
+
+  public static function br2nl($string)
+  {
+    return preg_replace('/\<br(\s*)?\/?\>/i', "\n", $string);
+  }
+
 }
 
 /**

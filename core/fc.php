@@ -83,7 +83,7 @@ class FC {
     //$this->sendErrorMail($error);
     if (ctrl::request()->is_ajax) {
       ob_clean();
-      ctrl()->_json(array('e' => ($e->getCode() ? $e->getCode() : 1), 'msg' => $e->getMessage()));
+      ctrl()->_json(array('e' => ($e->getCode() ? $e->getCode() : 1), 'msg' => $e->getMessage()), array('critical' => true));
     }
     $r || die($e->getMessage());
   }
@@ -96,7 +96,7 @@ class FC {
     //$this->sendErrorMail($error);
     if (ctrl::request()->is_ajax) {
       ob_clean();
-      ctrl()->_json(array('e' => 1, 'msg' => 'Системная ошибка'));
+      ctrl()->_json(array('e' => 1, 'msg' => 'Системная ошибка'), array('critical' => true));
     }
     $r || die($errstr);
   }

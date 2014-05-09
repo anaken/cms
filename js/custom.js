@@ -28,8 +28,11 @@ $(document).ready(function(){
       }
       f = function(data, textStatus, jqXHR){
         try {
-          var json = $.parseJSON(data);
-          if (json && json.e) {
+          var json = data;
+          if (typeof(data) == 'string') {
+            json = $.parseJSON(data);
+          }
+          if (json && json.e && json.msg) {
             alert(json.msg);
           }
         }
@@ -54,15 +57,11 @@ $(document).ready(function(){
         try {
           var json = $.parseJSON(result);
           if (json.e != 0) {
-            alert(json.msg);
             return;
           }
           callback && callback(json);
         }
-        catch (e) {
-          alert(result);
-          return;
-        }
+        catch (e) {}
       });
     }
   });

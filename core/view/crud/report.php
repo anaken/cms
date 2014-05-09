@@ -35,6 +35,9 @@
       <? } ?>
     </tbody>
   </table>
+
+  <?=$pages?>
+
   <? if ($editable && ( ! $table->system || ( ! isset($table->addable) || $table->addable))) { ?>
     <p><center><?=format::btn('add', $tableName, null, array('defaults' => $defaults))?></center></p>
   <? } ?>

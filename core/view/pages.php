@@ -10,9 +10,9 @@ if ($pages > 1) {
         $dots = false;
         $result[] = '...';
       }
-      $tag = $href ? 'a' : 'span';
       $hrefParam = $href ? ' href="'.$href.(substr_count($href, '?') ? '&' : '?').'p='.$i.'"' : '';
-      $result[] = '<'.$tag.$hrefParam.' class="smallBtn' . ($i == $page ? ' currentPage' : '') . '">' . $i . '</'.$tag.'>';
+      $act = ' '.str_replace('[p]', $i, $action);
+      $result[] = '<'.$tag.$hrefParam.$act.' class="smallBtn' . ($i == $page ? ' currentPage' : '') . '">' . $i . '</'.$tag.'>';
     } else {
       $dots = true;
     }

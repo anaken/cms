@@ -54,7 +54,7 @@ class format {
    * @todo часть функционала из _in_string должна перекочевать сюда (всякие проверки на default, editable и прочее..)
    */
   public static function in($field, modelObject $object = null, $params = array()) {
-    $format = (@$field->format ? $field->format->type : $field->type);
+    $format = (@$field->format->type ? $field->format->type : $field->type);
     $method = '_in_'.$format;
     if ( ! method_exists(self::i(), $method)) {
       throw new xException("Формат {$format} не найден.", self::ERROR_FORMAT_NOT_FOUND);
@@ -65,7 +65,7 @@ class format {
   public static function out($field, $object, $params = array()) {
     $fieldConfig = $object->table()->fields->$field;
     $format = (@$fieldConfig->format ? $fieldConfig->format->type : $fieldConfig->type);
-    if ( ! in_array($format, array('files', 'list', 'password'))) {
+    if ( ! in_array($format, array('files', 'list', 'password', 'bool'))) {
       return $object->$field;
     }
     $method = '_out_'.$format;
@@ -150,7 +150,7 @@ class format {
     if ($object) {
       $files = (array)$object->{$field->name}();
       foreach ($files as $file) {
-        $filePreview = $file->isImage() ? '<img src="'.$file->path().'"/>' : '<a href="'.$file->path().'">'.$file->name.'</a>';
+        $filePreview = $file->is_image ? '<img src="'.$file->path().'"/>' : '<a href="'.$file->path().'">'.$file->name.'</a>';
         $data .= '<div class="crudFilesInput"><button button-type="2" icon="close" class="formatFileRemove objectDelBtn" onclick="crud.removeFile(this)">удалить</button><input type="hidden" name="'.$inputName.'" value="'.$file->id.'"/>'.$filePreview.'</div>';
       }
     }
@@ -161,7 +161,7 @@ class format {
     $files = $object->{$field}();
     $result = array();
     foreach ($files as $file) {
-      if ($file->isImage()) {
+      if ($file->is_image) {
         $params = array_merge(array('width' => 100, 'height' => 100), $params);
         $src = $params['width'] && $params['height'] ? $file->thumb($params['width'], $params['height']) : $file->path();
         $result[] = '<img src="'.$src.'">';
@@ -184,6 +184,10 @@ class format {
 
   function _out_password($field, $object, $params) {
     return '***';
+  }
+
+  function _out_bool($field, $object, $params) {
+    return $object->$field ? 'Да' : 'Нет';
   }
 
   public static function input($field, $data) {

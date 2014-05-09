@@ -4,9 +4,23 @@ class model {
 
   /**
    * Список таблиц по алиасам
+   * берется из конфига
    * @var array [alias => table_name]
    */
   public $tables = array();
+
+  /**
+   * Список дочерних таблиц
+   * Может быть представлен одним из видов:
+   * [
+   *   table_name,
+   *   alias => table_name,
+   *   alias => ['name' => table_name, 'object' => 'modelNameObject']
+   *   ..
+   * ]
+   * @var array
+   */
+  protected $_childs = array();
 
   /**
    * Текущие параметры таблицы
@@ -27,14 +41,28 @@ class model {
   protected $_force = false;
 
   /**
-   * Экземпляры моделей
+   * Дерево объектов
    * @var array
+   */
+  private $_tree;
+
+  /**
+   * Вернуть количество элементов
+   * @var bool
+   */
+  protected $_count;
+
+  /**
+   * Экземпляры моделей
+   * @var model[]
    */
   protected static $instances = array();
 
   protected static $objects = array();
 
-  protected $objectClass = 'modelObject';
+  const DEFAULT_CLASS_OBJECT_NAME = 'modelObject';
+
+  protected $objectClass = self::DEFAULT_CLASS_OBJECT_NAME;
 
   const ERROR_TABLE_NOT_DEFINED  = 5001;
   const ERROR_TABLE_NOT_FOUND    = 5002;
@@ -43,9 +71,24 @@ class model {
   const ERROR_SQL_TYPE_NOT_FOUND = 5005;
   const ERROR_CLASS_INHERITANCE  = 5006;
 
-  protected function __construct($name) {
+  protected function __construct($name, $params = array()) {
     $this->tables = FC()->config('tables');
     $this->_tableAlias = $name;
+    $this->_updateChilds(array('child' => @$params['child']));
+  }
+
+  private function _updateChilds($params = array()) {
+    if (@$params['child']) {
+      $this->_childs = array();
+    }
+    else if ($this->_childs) {
+      $childs = array();
+      foreach ($this->_childs as $alias => $child) {
+        $childParams = is_array($child) ? $child : array('name' => $child);
+        $childs[(is_numeric($alias) ? $childParams['name'] : $alias)] = $childParams;
+      }
+      $this->_childs = $childs;
+    }
   }
 
   /**
@@ -63,6 +106,28 @@ class model {
     $model = new $class($name);
     self::$instances[$name] = $model;
     return $model;
+  }
+
+  /**
+   * Получение экземпляра библиотеки для конкретной таблицы
+   * @throws xException
+   * @param string $name
+   * @return model
+   */
+  public function __get($name) {
+    $class = get_class($this);
+    $instanceName = $this->_tableAlias.'.'.$name;
+    if (isset(self::$instances[$instanceName])) {
+      return self::$instances[$instanceName];
+    }
+    if (isset($this->tables->$name) && isset($this->_childs[$name])) {
+      $object = new $class($name, array('child' => true));
+      self::$instances[$instanceName] = $object;
+      return $object;
+    }
+    else {
+      throw new xException('Table '.$name.' not found', self::ERROR_TABLE_NOT_FOUND);
+    }
   }
 
   /**
@@ -97,9 +162,7 @@ class model {
       return $this->_tableParams[$this->_tableAlias];
     }
     if ( ! ($table = @$this->tables->{$this->_tableAlias})) {
-      if ( ! ($table = $this->_dynamicTable($this->_tableAlias))) {
-        throw new xException("Object table params not defined for alias {$this->_tableAlias}", self::ERROR_TABLE_NOT_DEFINED);
-      }
+      throw new xException("Object table params not defined for alias {$this->_tableAlias}", self::ERROR_TABLE_NOT_DEFINED);
     }
     $table->name = $this->_tableAlias;
     $table->id = isset($table->id) ? $table->id : 'id';
@@ -134,19 +197,24 @@ class model {
   }
 
   /**
-   * Определение динамических таблиц например inet_aggr_YYYYMM
-   * @param  string $name - алиас таблицы
-   * @return string - полное название таблицы
-   */
-  protected function _dynamicTable($name) { return ''; }
-
-  /**
    * Установить флаг вызова родительского метода без проверки в дочернем
    * @return self
    */
   final public function force() {
     $this->_force = true;
     return $this;
+  }
+
+  /**
+   * Получение количества элементов в выборке
+   * @param $filter
+   * @param mixed $order
+   * @param mixed $limit
+   * @return int
+   */
+  public function count($filter, $order = null, $limit = null) {
+    $this->_count = true;
+    return $this->get($filter, $order, $limit);
   }
 
   /**
@@ -178,17 +246,27 @@ class model {
       $order = implode(',', $orderList);
     }
 
+    $select = '*';
+    if ($this->_count) {
+      $select = 'count(*) as `count`';
+    }
+
     try {
-      $result = FC()->db->select('*', $this->table(), array('where' => $where, 'order' => $order, 'limit' => $limit));
+      $result = FC()->db->select($select, $this->table(), array('where' => $where, 'order' => $order, 'limit' => $limit));
     }
     catch (Exception $e) {
       if ($e->getCode() == simpleDb::ERROR_TABLE_NOT_EXIST) {
         $this->install($this->table());
-        $result = FC()->db->select('*', $this->table(), array('where' => $where, 'order' => $order, 'limit' => $limit));
+        $result = FC()->db->select($select, $this->table(), array('where' => $where, 'order' => $order, 'limit' => $limit));
       }
       else {
         throw $e;
       }
+    }
+
+    if ($this->_count) {
+      $this->_count = false;
+      return $result->next()->count;
     }
     
     if (is_numeric($filter) || is_string($filter)) {
@@ -482,7 +560,7 @@ class model {
       $default = isset($fieldConfig->default) ? 'DEFAULT '.$fieldConfig->default : '';
       $comment = str_replace("'", "''", $fieldConfig->caption);
       $field = "`{$fieldName}` {$sqlType} {$required} {$increment} {$default} COMMENT '{$comment}'";
-      if ($existTableDataFields && ! array_key_exists($fieldName, $existTableDataFields)) {
+      if (@$existTableDataFields && ! array_key_exists($fieldName, $existTableDataFields)) {
         FC()->db->query("
           ALTER TABLE `{$tableName}` ADD COLUMN {$field} ".($previousField ? " AFTER `{$previousField}`" : '')."
         ");
@@ -499,7 +577,7 @@ class model {
     }
     $begins = @$table->begins ? 'AUTO_INCREMENT='.$table->begins : '';
     $tableComment = str_replace("'", "''", $table->caption);
-    if ($existTableDataFields) {
+    if (@$existTableDataFields) {
       foreach ($existTableDataFields as $existFieldName => $existFieldData) {
         if ( ! array_key_exists($existFieldName, $table->fields)) {
           FC()->db->query("
@@ -526,6 +604,23 @@ class model {
       }
     }
 
+  }
+
+  /**
+   * Получить дерево объектов
+   * @param  int $parentId
+   * @param  string $name
+   * @return array
+   */
+  function tree($parentId = null, $name = 'parent_id') {
+    if ( ! isset($this->_tree[$name])) {
+      $items = model($this->_tableAlias)->get(null, 'id');
+      $this->_tree[$name] = array();
+      foreach ($items as $item) {
+        $this->_tree[$name][(int)$item->{$name}][$item->id] = $item;
+      }
+    }
+    return (array)(isset($parentId) ? @$this->_tree[$name][(int)$parentId] : $this->_tree[$name]);
   }
 
 }
@@ -584,7 +679,11 @@ class modelObject {
         return (array)$this->_files[$name];
       }
       if (@$table->fields->$name->type == 'date') {
-        return date($args[0], strtotime($this->{$name}));
+        $t = strtotime($this->{$name});
+        $date = date($args[0], $t);
+        $date = str_replace('м', funcs::month(date('n', $t)), $date);
+        $date = str_replace('М', funcs::month(date('n', $t), 2), $date);
+        return $date;
       }
     }
     else if (strpos($name, 'Btn') == strlen($name) - 3 || strpos($name, 'Button') == strlen($name) - 6) {

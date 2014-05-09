@@ -90,6 +90,12 @@
   margin-top: 10px;
   z-index: 1;
 }
+.crudReportWin .pages {
+  padding: 10px 0 0 0;
+}
+.crudReportWin .pages .currentPage {
+  background: transparent;
+}
 .mwcmsService {
   position: fixed;
   left: 0; top: 0;

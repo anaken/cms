@@ -26,10 +26,10 @@ class authCtrl extends ctrl {
         throw new xException("Пользователь не найден", self::ERROR_USER_NOT_FOUND, "Пользователь не найден");
       }
       $_SESSION['user'] = $user->data();
-      $this->_json(array('e' => 0));
+      return $this->_json(array('e' => 0));
     }
     catch (Exception $e) {
-      $this->_json(array('e' => 1, 'msg' => $e->getMessage()));
+      return $this->_json(array('e' => 1, 'msg' => $e->getMessage()));
     }
   }
 

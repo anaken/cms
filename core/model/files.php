@@ -46,8 +46,4 @@ class modelFilesObject extends modelObject {
     return xFiles::getFilesDir($full).'/'.$this->id.'/src'.($this->ext ? '.'.$this->ext : '');
   }
 
-  function isImage() {
-    return strpos($this->type, 'image/') === 0;
-  }
-
 }

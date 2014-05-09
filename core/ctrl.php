@@ -178,12 +178,13 @@ class ctrl {
     die($this->view->render(self::$layout, array('call' => $this->view->render('404'))));
   }
 
-  public function _json($data) {
-    die(json_encode($data));
-  }
-
-  public function test() {
-    return $this->_pages(3, 11);
+  public function _json($data, $params = array()) {
+    self::setLayout(null);
+    $result = json_encode($data);
+    if ($params['critical']) {
+      die($result);
+    }
+    return $result;
   }
 
   protected function _pages($pages, $params = array()) {
@@ -193,7 +194,9 @@ class ctrl {
     return $this->view->render('pages', array(
       'page'   => $this->requestPage,
       'pages'  => $pages,
-      'href'   => @$params['href']
+      'href'   => @$params['href'],
+      'action' => @$params['action'],
+      'tag'    => @$params['tag'] ? $params['tag'] : ($params['href'] ? 'a' : 'span'),
     ));
   }
 
